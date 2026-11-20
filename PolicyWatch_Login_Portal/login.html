@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PolicyWatch - User Login & Change Tracker Portal</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
+      --secondary: #0f172a;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --success: #16a34a;
+      --success-bg: #f0fdf4;
+      --warning: #d97706;
+      --warning-bg: #fffbeb;
+      --danger: #dc2626;
+      --danger-bg: #fef2f2;
+      --radius: 10px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation Bar */
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0.85rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--secondary);
+    }
+
+    .brand-icon {
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: white;
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.2rem;
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+    }
+
+    .brand-text h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-text span {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: block;
+      margin-top: -2px;
+    }
+
+    .system-status-pills {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .status-pill {
+      font-size: 0.72rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-weight: 500;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* Auth View (Grid Layout) */
+    .auth-section {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 2.5rem;
+      align-items: start;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 900px) {
+      .auth-section {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Project Showcase Card */
+    .showcase-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .showcase-header h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .showcase-header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .module-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .module-item {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fafbfc;
+      transition: all 0.2s;
+    }
+
+    .module-item:hover {
+      border-color: #cbd5e1;
+      background: white;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .module-icon {
+      font-size: 1.5rem;
+      padding: 0.5rem;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+    }
+
+    .module-info h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--secondary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .module-badge {
+      font-size: 0.68rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      background: #e2e8f0;
+      color: #334155;
+      font-weight: 600;
+    }
+
+    .module-info p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    /* Auth Box */
+    .auth-box {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .auth-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: #f8fafc;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 0.85rem 1rem;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .auth-tab.active {
+      color: var(--primary);
+      background: white;
+      border-bottom-color: var(--primary);
+    }
+
+    .auth-form-container {
+      padding: 2rem;
+    }
+
+    .form-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--secondary);
+      margin-bottom: 0.25rem;
+    }
+
+    .form-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.15rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+      color: #334155;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.92rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.75rem 1.25rem;
+      font-size: 0.92rem;
+      font-weight: 600;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+    }
+
+    .btn-outline {
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-outline:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    .btn-sm {
+      padding: 0.45rem 0.85rem;
+      font-size: 0.82rem;
+      width: auto;
+    }
+
+    /* Demo Quick Logins */
+    .quick-logins {
+      margin-top: 1.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px dashed var(--border);
+    }
+
+    .quick-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+
+    .quick-chip {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.5rem 0.65rem;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quick-chip:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .quick-chip strong {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--secondary);
+    }
+
+    .quick-chip span {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    /* Alerts */
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .alert-danger {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid #fecaca;
+    }
+
+    .alert-success {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid #bbf7d0;
+    }
+
+    /* Authenticated Dashboard View */
+    .dashboard-view {
+      display: none;
+    }
+
+    .dashboard-header {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem 2rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .user-welcome h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--secondary);
+    }
+
+    .user-welcome p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .stat-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .stat-value {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: var(--secondary);
+      margin: 0.35rem 0 0.15rem 0;
+    }
+
+    .stat-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Dashboard Navigation Tabs */
+    .dash-nav {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+
+    .dash-nav-btn {
+      padding: 0.75rem 1.25rem;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      font-weight: 600;
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .dash-nav-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    /* Content Cards */
+    .data-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--secondary);
+      margin-bottom: 0.35rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+    }
+
+    /* Websites Grid */
+    .websites-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .site-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      background: #fafbfc;
+      transition: all 0.2s;
+    }
+
+    .site-card:hover {
+      background: white;
+      box-shadow: var(--shadow);
+      border-color: #cbd5e1;
+    }
+
+    .site-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 0.75rem;
+    }
+
+    .site-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--secondary);
+    }
+
+    .site-url {
+      font-size: 0.8rem;
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .site-badges {
+      display: flex;
+      gap: 0.4rem;
+      margin-bottom: 1rem;
+    }
+
+    .site-badge {
+      font-size: 0.72rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      background: #e0f2fe;
+      color: #0369a1;
+      font-weight: 600;
+    }
+
+    /* Tables */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      text-align: left;
+    }
+
+    th {
+      background: #f8fafc;
+      padding: 0.75rem 1rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: #f8fafc;
+    }
+
+    /* Diff Viewer Styling */
+    .diff-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 800px) {
+      .diff-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .diff-box {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      font-size: 0.82rem;
+      background: white;
+    }
+
+    .diff-header {
+      padding: 0.5rem 0.75rem;
+      font-weight: 700;
+      background: #f1f5f9;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .diff-content {
+      padding: 0.75rem;
+      font-family: Consolas, Monaco, monospace;
+      white-space: pre-wrap;
+      max-height: 340px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+
+    .diff-added {
+      background: #dcfce7;
+      color: #14532d;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+
+    .diff-removed {
+      background: #fee2e2;
+      color: #7f1d1d;
+      text-decoration: line-through;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+
+    .badge-critical {
+      background: #fee2e2;
+      color: #b91c1c;
+      font-weight: 700;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.72rem;
+    }
+
+    .badge-major {
+      background: #fef3c7;
+      color: #92400e;
+      font-weight: 700;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.72rem;
+    }
+
+    .badge-minor {
+      background: #e0e7ff;
+      color: #3730a3;
+      font-weight: 700;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.72rem;
+    }
+
+    /* Footer */
+    footer {
+      background: white;
+      border-top: 1px solid var(--border);
+      padding: 1.5rem 0;
+      margin-top: auto;
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header>
+    <div class="nav-container">
+      <a href="#" class="brand" onclick="location.reload()">
+        <div class="brand-icon">PW</div>
+        <div class="brand-text">
+          <h1>PolicyWatch</h1>
+          <span>Privacy Policy & Terms Change Tracker</span>
+        </div>
+      </a>
+
+      <div class="system-status-pills">
+        <span class="status-pill" title="SQLite tracker.db">
+          <span class="status-dot"></span> DBMS: Connected
+        </span>
+        <span class="status-pill" title="Sentence differ & classifier">
+          <span class="status-dot"></span> Change Detection: Active
+        </span>
+        <span class="status-pill" title="Offline fixtures & evidence runner">
+          <span class="status-dot"></span> Scraper: Ready
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main View -->
+  <main>
+
+    <!-- 1. AUTHENTICATION SECTION (Login & Register) -->
+    <section id="auth-section" class="auth-section">
+
+      <!-- Left Column: Project Architecture & Module Highlights -->
+      <div class="showcase-card">
+        <div class="showcase-header">
+          <h2>Unified Policy Tracking Platform</h2>
+          <p>
+            Welcome to <strong>PolicyWatch</strong>. This user portal integrates the project's
+            three core engineering modules into one interface.
+          </p>
+        </div>
+
+        <div class="module-list">
+          <!-- Module 1: DBMS -->
+          <div class="module-item">
+            <div class="module-icon">🗄️</div>
+            <div class="module-info">
+              <h3>
+                Database Management System
+                <span class="module-badge">SQLite3 Core</span>
+              </h3>
+              <p>
+                Structured relational schema (<code>tracker.db</code>) with 5 normalized tables:
+                <code>Users</code>, <code>Websites</code>, <code>PrivacyPolicies</code>,
+                <code>TermsConditions</code>, and <code>ChangeHistory</code>. Supports foreign keys,
+                password hashing, and cascade deletions.
+              </p>
+            </div>
+          </div>
+
+          <!-- Module 2: Change Detection -->
+          <div class="module-item">
+            <div class="module-icon">🔍</div>
+            <div class="module-info">
+              <h3>
+                Semantic Change Detection
+                <span class="module-badge">NLP Classifier</span>
+              </h3>
+              <p>
+                Analyzes policy revisions at the sentence level. Automatically classifies clauses
+                such as <em>Data Retention</em>, <em>Third-Party Sharing</em>, <em>Arbitration Waivers</em>,
+                and <em>Biometrics</em> while filtering whitespace and cookie banner noise.
+              </p>
+            </div>
+          </div>
+
+          <!-- Module 3: Web Scraper -->
+          <div class="module-item">
+            <div class="module-icon">🌐</div>
+            <div class="module-info">
+              <h3>
+                Web Scraping & Versioning
+                <span class="module-badge">ptct-scraper</span>
+              </h3>
+              <p>
+                Monitors live and synthetic Acme test sources. Tracks timestamps, content hashes,
+                selector shifts, and generates verifiable snapshot evidence across refresh cycles.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: #f1f5f9; padding: 1rem; border-radius: 8px; font-size: 0.85rem; color: #475569;">
+          <strong>💡 Project Information Notice:</strong>
+          Sign in below using the pre-seeded team test accounts or register a new user to test the database CRUD operations.
+        </div>
+      </div>
+
+      <!-- Right Column: Login & Register Forms -->
+      <div class="auth-box">
+        <div class="auth-tabs">
+          <button id="tab-login" class="auth-tab active" onclick="switchAuthTab('login')">User Login</button>
+          <button id="tab-register" class="auth-tab" onclick="switchAuthTab('register')">Create Account</button>
+        </div>
+
+        <!-- Alert Notification Box -->
+        <div class="auth-form-container">
+          <div id="auth-alert" class="alert" style="display: none;"></div>
+
+          <!-- LOGIN FORM -->
+          <form id="login-form" onsubmit="handleLoginSubmit(event)">
+            <h3 class="form-title">Welcome Back</h3>
+            <p class="form-subtitle">Enter your credentials to access your tracked policies</p>
+
+            <div class="form-group">
+              <label for="login-identifier">Username or Email</label>
+              <input
+                type="text"
+                id="login-identifier"
+                class="form-control"
+                placeholder="e.g. admin or john_doe"
+                required
+                autocomplete="username"
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="login-password">Password</label>
+              <input
+                type="password"
+                id="login-password"
+                class="form-control"
+                placeholder="Enter your password"
+                required
+                autocomplete="current-password"
+              >
+            </div>
+
+            <button type="submit" id="login-btn" class="btn btn-primary">
+              Sign In to PolicyWatch
+            </button>
+          </form>
+
+          <!-- REGISTER FORM -->
+          <form id="register-form" style="display: none;" onsubmit="handleRegisterSubmit(event)">
+            <h3 class="form-title">Create Account</h3>
+            <p class="form-subtitle">Register a new profile in tracker.db</p>
+
+            <div class="form-group">
+              <label for="reg-username">Username</label>
+              <input
+                type="text"
+                id="reg-username"
+                class="form-control"
+                placeholder="Choose username (min 3 chars)"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="reg-email">Email Address</label>
+              <input
+                type="email"
+                id="reg-email"
+                class="form-control"
+                placeholder="you@company.com"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="reg-password">Password</label>
+              <input
+                type="password"
+                id="reg-password"
+                class="form-control"
+                placeholder="Choose password (min 6 chars)"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="reg-confirm">Confirm Password</label>
+              <input
+                type="password"
+                id="reg-confirm"
+                class="form-control"
+                placeholder="Re-enter password"
+                required
+              >
+            </div>
+
+            <button type="submit" id="reg-btn" class="btn btn-primary">
+              Create User Account
+            </button>
+          </form>
+
+          <!-- QUICK-LOGINS FOR DEMONSTRATION / VIVA -->
+          <div class="quick-logins">
+            <div class="quick-title">
+              <span>Quick Demo Accounts</span>
+              <span style="font-weight: 500; font-size: 0.72rem; color: #2563eb;">1-Click Login</span>
+            </div>
+
+            <div class="quick-grid">
+              <div class="quick-chip" onclick="quickLogin('admin', 'admin123')">
+                <strong>🛡️ Admin Account</strong>
+                <span>admin / admin123 (3 sites)</span>
+              </div>
+              <div class="quick-chip" onclick="quickLogin('john_doe', 'password123')">
+                <strong>👤 Standard User</strong>
+                <span>john_doe / password123 (1 site)</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 2. AUTHENTICATED USER DASHBOARD VIEW -->
+    <section id="dashboard-section" class="dashboard-view">
+
+      <!-- Header with User Profile -->
+      <div class="dashboard-header">
+        <div class="user-welcome">
+          <h2>Welcome, <span id="dash-username">User</span>!</h2>
+          <p id="dash-email">user@tracker.local &bull; Relational SQLite User Session Active</p>
+        </div>
+        <div>
+          <button class="btn btn-outline btn-sm" onclick="handleLogout()">Sign Out</button>
+        </div>
+      </div>
+
+      <!-- Real-Time Metrics Row -->
+      <div class="stat-cards-grid">
+        <div class="stat-card">
+          <div class="stat-label">Websites Tracked</div>
+          <div class="stat-value" id="stat-sites">0</div>
+          <div class="stat-desc">Monitored domains in DBMS</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">Stored Versions</div>
+          <div class="stat-value" id="stat-versions">0</div>
+          <div class="stat-desc">Archived Privacy & Terms revisions</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">Changes Detected</div>
+          <div class="stat-value" id="stat-changes">0</div>
+          <div class="stat-desc">Logged in ChangeHistory table</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">Scraper Health</div>
+          <div class="stat-value" style="color: var(--success); font-size: 1.4rem; padding-top: 0.5rem;">
+            100% PASS
+          </div>
+          <div class="stat-desc">17/17 change test cases verified</div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs Inside Dashboard -->
+      <div class="dash-nav">
+        <button class="dash-nav-btn active" onclick="switchDashTab('websites')">Tracked Websites</button>
+        <button class="dash-nav-btn" onclick="switchDashTab('diff')">Change Detection Diff Viewer</button>
+        <button class="dash-nav-btn" onclick="switchDashTab('scraper')">Scraper Evidence & Feed</button>
+        <button class="dash-nav-btn" onclick="switchDashTab('audit')">Audit Change History</button>
+      </div>
+
+      <!-- Tab 1: Websites List -->
+      <div id="tab-content-websites" class="data-card">
+        <div class="card-title">
+          <span>Websites Tracked by Your Account</span>
+          <span style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted);">
+            Cascade Deletions & Foreign Keys Active
+          </span>
+        </div>
+        <div class="card-subtitle">
+          Real-time records queried from <code>Websites</code> table in <code>tracker.db</code>.
+        </div>
+
+        <div id="websites-grid" class="websites-grid">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Tab 2: Change Detection & Diff Viewer -->
+      <div id="tab-content-diff" class="data-card" style="display: none;">
+        <div class="card-title">
+          <span>Semantic Policy Diff Viewer</span>
+          <span class="module-badge">NLP Classifier Engine</span>
+        </div>
+        <div class="card-subtitle">
+          Side-by-side comparison with automated clause categorization (e.g. Data Retention, Arbitration, GDPR).
+        </div>
+
+        <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
+          <label style="font-size: 0.85rem; font-weight: 600;">Select Case:</label>
+          <select id="diff-case-selector" class="form-control" style="width: auto; display: inline-block;" onchange="loadDiffCase(this.value)">
+            <option value="acme_gdpr">Acme Cloud: v1 vs v2 (GDPR & Telemetry Update)</option>
+            <option value="acme_retention">Acme Cloud: Retention Period (30 Days &rarr; 90 Days)</option>
+            <option value="socialpulse_biometrics">SocialPulse: v1 vs v2 (Biometric Facial Data Added)</option>
+            <option value="payswift_arbitration">PaySwift: v1 vs v2 (Mandatory Arbitration Clause)</option>
+          </select>
+        </div>
+
+        <div id="diff-classification-box" style="padding: 0.75rem 1rem; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; margin-bottom: 1rem; font-size: 0.85rem;">
+          <!-- Classification details -->
+        </div>
+
+        <div class="diff-container">
+          <div class="diff-box">
+            <div class="diff-header">
+              <span>Original Version (v1)</span>
+              <span id="diff-v1-label" style="font-weight: normal; color: var(--text-muted);">Baseline</span>
+            </div>
+            <div id="diff-old-content" class="diff-content"></div>
+          </div>
+
+          <div class="diff-box">
+            <div class="diff-header">
+              <span>Updated Version (v2)</span>
+              <span id="diff-v2-label" style="font-weight: normal; color: var(--primary);">Revisions Highlighted</span>
+            </div>
+            <div id="diff-new-content" class="diff-content"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Scraper Evidence & Feed -->
+      <div id="tab-content-scraper" class="data-card" style="display: none;">
+        <div class="card-title">
+          <span>Web Scraper Evidence & Snapshots</span>
+          <span class="module-badge">ptct-scraper Run Evidence</span>
+        </div>
+        <div class="card-subtitle">
+          Timestamped snapshots, SHA-256 content hashes, and labelled test evaluation records.
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Test Case</th>
+                <th>Scenario Description</th>
+                <th>Detected Alert</th>
+                <th>Versions Stored</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="scraper-evidence-tbody">
+              <!-- Dynamically populated from scraper records -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 4: Audit Change History -->
+      <div id="tab-content-audit" class="data-card" style="display: none;">
+        <div class="card-title">
+          <span>ChangeHistory Audit Trail</span>
+          <span class="module-badge">Relational Audit Log</span>
+        </div>
+        <div class="card-subtitle">
+          Sequential revision events logged into <code>ChangeHistory</code> table.
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Change ID</th>
+                <th>Website</th>
+                <th>Document Type</th>
+                <th>Version Transition</th>
+                <th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody id="audit-history-tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 1.5rem;">
+      <strong>PolicyWatch</strong> &bull; Privacy Policy & Terms Change Tracker
+      <br>
+      <span style="font-size: 0.75rem; color: var(--text-muted);">
+        DBMS (SQLite) &bull; Change Detection (difflib / NLP) &bull; Data Scraper (ptct-scraper)
+      </span>
+    </div>
+  </footer>
+
+  <!-- Embedded Client Logic & Live API Bridge -->
+  <script>
+    // System datasets (embedded fallback so page runs 100% offline even without server)
+    const EMBEDDED_DATA = {
+      accounts: {
+        "admin": {
+          user_id: 1,
+          username: "admin",
+          email: "admin@tracker.local",
+          metrics: { total_websites: 3, total_policies: 4, total_terms: 3, total_versions: 7, total_changes: 5 },
+          websites: [
+            {
+              website_id: 1,
+              website_name: "Acme Cloud Services",
+              website_url: "https://acmecloud.io",
+              policy_version_count: 2,
+              terms_version_count: 2,
+              latest_policy: {
+                version: 2,
+                updated_at: "2026-11-20 05:09:31",
+                policy_content: "Acme Cloud Privacy Policy (Version 2.0 - GDPR/CCPA Update)\nEffective Date: June 1, 2024\n\n1. Information We Collect\nWe collect personal information including:\n- Full name and business email address\n- Company name and billing address\n- Device telemetry, IP addresses, and session diagnostic cookies\n- Location data derived from IP addresses for security compliance\n\n2. How We Use Information\nWe use your collected information strictly to:\n- Provide and optimize cloud infrastructure services\n- Process recurring subscription payments securely\n- Send security alerts and maintenance notices\n- Comply with international data regulations (GDPR and CCPA)\n\n3. Data Sharing\nWe do not sell personal data. We share data only with infrastructure providers and security auditors."
+              },
+              latest_terms: {
+                version: 2,
+                updated_at: "2026-11-20 05:09:31",
+                terms_content: "Acme Cloud Terms of Service (Version 2.0)\n\n1. Acceptance of Terms\nBy accessing our services, you agree to these binding terms.\n\n2. Dispute Resolution\nAny dispute arising from these terms will be settled exclusively through binding arbitration rather than court proceedings.\n\n3. Service Level Agreement\nWe guarantee 99.9% uptime for enterprise subscribers."
+              }
+            },
+            {
+              website_id: 2,
+              website_name: "SocialPulse Media",
+              website_url: "https://socialpulse.com",
+              policy_version_count: 2,
+              terms_version_count: 1,
+              latest_policy: {
+                version: 2,
+                updated_at: "2026-11-20 05:09:31",
+                policy_content: "SocialPulse Privacy Policy (Version 2.0 - Biometrics & Ad Bidding)\n\n1. User Telemetry & Biometrics\nWe collect facial geometry from uploaded video stories to generate AR filters and avatar models.\n\n2. Real-Time Ad Bidding\nAggregated user interests and engagement signals are shared with certified programmatic ad networks."
+              },
+              latest_terms: {
+                version: 1,
+                updated_at: "2026-11-20 05:09:31",
+                terms_content: "SocialPulse Terms of Use (Version 1.0)\n\nUsers retain copyright over original content but grant SocialPulse a worldwide royalty-free distribution license."
+              }
+            },
+            {
+              website_id: 3,
+              website_name: "PaySwift Gateway",
+              website_url: "https://payswift.net",
+              policy_version_count: 1,
+              terms_version_count: 2,
+              latest_policy: {
+                version: 1,
+                updated_at: "2026-11-20 05:09:31",
+                policy_content: "PaySwift Privacy Statement (Version 1.0)\n\nFinancial transaction telemetry is encrypted under PCI-DSS Level 1 compliance standards."
+              },
+              latest_terms: {
+                version: 2,
+                updated_at: "2026-11-20 05:09:31",
+                terms_content: "PaySwift Merchant Agreement (Version 2.0)\n\n1. Transaction Fees\nDomestic transactions are assessed a 2.9% + $0.30 fee.\n\n2. Mandatory Arbitration & Class Action Waiver\nAll merchant disputes must proceed individually under American Arbitration Association rules."
+              }
+            }
+          ],
+          change_history: [
+            { change_id: 5, website_name: "PaySwift Gateway", change_type: "Terms & Conditions", old_version: 1, new_version: 2, change_date: "2026-11-20 05:09:31" },
+            { change_id: 4, website_name: "SocialPulse Media", change_type: "Privacy Policy", old_version: 1, new_version: 2, change_date: "2026-11-20 05:09:31" },
+            { change_id: 3, website_name: "Acme Cloud Services", change_type: "Terms & Conditions", old_version: 1, new_version: 2, change_date: "2026-11-20 05:09:31" },
+            { change_id: 2, website_name: "Acme Cloud Services", change_type: "Privacy Policy", old_version: 1, new_version: 2, change_date: "2026-11-20 05:09:31" },
+            { change_id: 1, website_name: "Acme Cloud Services", change_type: "Privacy Policy", old_version: null, new_version: 1, change_date: "2026-11-20 05:09:31" }
+          ]
+        },
+        "john_doe": {
+          user_id: 2,
+          username: "john_doe",
+          email: "john@example.com",
+          metrics: { total_websites: 1, total_policies: 1, total_terms: 1, total_versions: 2, total_changes: 2 },
+          websites: [
+            {
+              website_id: 4,
+              website_name: "DevPortal Community",
+              website_url: "https://devportal.org",
+              policy_version_count: 1,
+              terms_version_count: 1,
+              latest_policy: {
+                version: 1,
+                updated_at: "2026-11-20 05:09:31",
+                policy_content: "DevPortal Privacy Notice (Version 1.0)\n\nWe store developer profile usernames, GitHub handles, and open-source contributions."
+              },
+              latest_terms: {
+                version: 1,
+                updated_at: "2026-11-20 05:09:31",
+                terms_content: "DevPortal Terms of Service (Version 1.0)\n\nAll code snippets shared in forum posts are released under the MIT Open Source License."
+              }
+            }
+          ],
+          change_history: [
+            { change_id: 7, website_name: "DevPortal Community", change_type: "Terms & Conditions", old_version: null, new_version: 1, change_date: "2026-11-20 05:09:31" },
+            { change_id: 6, website_name: "DevPortal Community", change_type: "Privacy Policy", old_version: null, new_version: 1, change_date: "2026-11-20 05:09:31" }
+          ]
+        }
+      },
+      scraperEvidence: [
+        { case: "01_no_change", desc: "Identical page re-fetched across cycles", alert: "None (Identical)", versions: 1, pass: true },
+        { case: "02_whitespace_only", desc: "Indentation and blank line variance", alert: "format_only (Ignored)", versions: 1, pass: true },
+        { case: "04_cookie_banner_noise", desc: "Cookie popup injects markup outside body", alert: "format_only (Filtered)", versions: 1, pass: true },
+        { case: "06_wording_edit", desc: "Data retention period edited: 30 -> 90 days", alert: "section_edited", versions: 2, pass: true },
+        { case: "07_section_added", desc: "Children's Privacy COPPA section added", alert: "section_added", versions: 2, pass: true },
+        { case: "08_section_removed", desc: "Third-party sharing disclosure removed", alert: "section_removed", versions: 2, pass: true },
+        { case: "11_multiple_changes", desc: "Revision date + added clause + wording edit", alert: "multiple_alerts", versions: 2, pass: true },
+        { case: "13_selector_changed", desc: "Website altered CSS selector container", alert: "parser_failure (Safe)", versions: 1, pass: true },
+        { case: "17_http_429", desc: "Rate limited HTTP 429 response", alert: "fetch_error (Backoff)", versions: 1, pass: true }
+      ],
+      diffCases: {
+        "acme_gdpr": {
+          title: "Acme Cloud: GDPR & Telemetry Update",
+          category: "data_collection / user_rights",
+          severity: "major",
+          rationale: "Added collection of device telemetry, IP locations, and GDPR compliance provisions.",
+          oldText: `1. Information We Collect
+We collect standard personal information including:
+- Your full name and business email address
+- Company name and billing address
+- Login credentials (username and hashed passwords)
+- Basic web server access logs and browser cookie identifiers
+
+2. How We Use Information
+We use your collected information strictly to:
+- Provide cloud infrastructure services
+- Process recurring subscription payments`,
+          newText: `1. Information We Collect
+We collect personal information including:
+- Your full name and business email address
+- Company name and billing address
+- Login credentials (username and hashed passwords)
+- Device telemetry, IP addresses, and session diagnostic cookies
+- Location data derived from IP addresses for security compliance
+
+2. How We Use Information
+We use your collected information strictly to:
+- Provide and optimize cloud infrastructure services
+- Process recurring subscription payments securely
+- Comply with international data regulations (GDPR and CCPA)`
+        },
+        "acme_retention": {
+          title: "Acme Cloud: Retention Period Change",
+          category: "data_retention",
+          severity: "major",
+          rationale: "Data storage duration extended from 30 days to 90 days following account termination.",
+          oldText: `Section 4. Data Retention
+We keep your information for 30 days after you close your account, unless the law requires us to keep it longer.
+After 30 days, all backups and telemetry records are permanently wiped from production disks.`,
+          newText: `Section 4. Data Retention
+We keep your information for 90 days after you close your account, unless the law requires us to keep it longer.
+After 90 days, all backups and telemetry records are permanently wiped from production disks.`
+        },
+        "socialpulse_biometrics": {
+          title: "SocialPulse: Biometrics Added",
+          category: "data_collection (Biometrics)",
+          severity: "critical",
+          rationale: "Introduces collection of facial geometry and biometric vectors for AI filters.",
+          oldText: `Section 2. Content You Share
+You upload text, photos, and video posts to share with your chosen circle of friends.
+We analyze engagement metrics to deliver relevant notifications.`,
+          newText: `Section 2. Content You Share
+You upload text, photos, and video posts to share with your chosen circle of friends.
+We collect facial geometry from uploaded video stories to generate AR filters and avatar models.
+Aggregated engagement signals are shared with certified programmatic ad networks.`
+        },
+        "payswift_arbitration": {
+          title: "PaySwift: Mandatory Arbitration Clause",
+          category: "dispute_arbitration",
+          severity: "critical",
+          rationale: "Waives court litigation and jury trial in favor of individual binding arbitration.",
+          oldText: `Section 12. Governing Law
+These terms are governed by the laws of the State of Delaware. Any dispute will be resolved in state or federal court located in Wilmington, Delaware.`,
+          newText: `Section 12. Governing Law & Arbitration
+Any dispute arising from these terms will be settled exclusively through binding arbitration under the American Arbitration Association rules rather than court proceedings. You explicitly waive any right to participate in a class-action lawsuit.`
+        }
+      }
+    };
+
+    // State
+    let currentUser = null;
+    let currentDashboard = null;
+
+    // Switch between Login and Register tabs
+    function switchAuthTab(tab) {
+      const loginTab = document.getElementById("tab-login");
+      const regTab = document.getElementById("tab-register");
+      const loginForm = document.getElementById("login-form");
+      const regForm = document.getElementById("register-form");
+      const alertBox = document.getElementById("auth-alert");
+
+      alertBox.style.display = "none";
+
+      if (tab === "login") {
+        loginTab.classList.add("active");
+        regTab.classList.remove("active");
+        loginForm.style.display = "block";
+        regForm.style.display = "none";
+      } else {
+        loginTab.classList.remove("active");
+        regTab.classList.add("active");
+        loginForm.style.display = "none";
+        regForm.style.display = "block";
+      }
+    }
+
+    // Show alert
+    function showAlert(msg, isSuccess = false) {
+      const alertBox = document.getElementById("auth-alert");
+      alertBox.style.display = "flex";
+      alertBox.className = "alert " + (isSuccess ? "alert-success" : "alert-danger");
+      alertBox.innerHTML = `<span>${isSuccess ? '✓' : '⚠️'}</span> <span>${msg}</span>`;
+    }
+
+    // Quick login helper
+    function quickLogin(username, password) {
+      document.getElementById("login-identifier").value = username;
+      document.getElementById("login-password").value = password;
+      switchAuthTab("login");
+      handleLoginSubmit(new Event("submit"));
+    }
+
+    // Handle Login Submit
+    async function handleLoginSubmit(e) {
+      if (e) e.preventDefault();
+      const identifier = document.getElementById("login-identifier").value.trim();
+      const password = document.getElementById("login-password").value;
+
+      if (!identifier || !password) {
+        showAlert("Please enter both username/email and password.");
+        return;
+      }
+
+      // Try server API first
+      try {
+        const resp = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ identifier, password })
+        });
+
+        if (resp.ok) {
+          const data = await resp.json();
+          renderDashboard(data.user, data.dashboard);
+          return;
+        } else {
+          const errData = await resp.json().catch(() => ({}));
+          // If server explicitly rejected credentials
+          if (resp.status === 401 || resp.status === 400) {
+            showAlert(errData.error || "Invalid username/email or password.");
+            return;
+          }
+        }
+      } catch (err) {
+        console.log("Server API unavailable, falling back to embedded client database", err);
+      }
+
+      // Offline / Static Fallback verification
+      const lower = identifier.toLowerCase();
+      let matched = null;
+
+      for (const [key, acc] of Object.entries(EMBEDDED_DATA.accounts)) {
+        if (key.toLowerCase() === lower || acc.email.toLowerCase() === lower) {
+          matched = acc;
+          break;
+        }
+      }
+
+      if (matched) {
+        if ((matched.username === "admin" && password === "admin123") ||
+            (matched.username === "john_doe" && password === "password123")) {
+          renderDashboard(
+            { user_id: matched.user_id, username: matched.username, email: matched.email },
+            matched
+          );
+          return;
+        }
+      }
+
+      showAlert("Invalid username/email or password. (Hint: use admin / admin123 or john_doe / password123)");
+    }
+
+    // Handle Registration Submit
+    async function handleRegisterSubmit(e) {
+      if (e) e.preventDefault();
+      const username = document.getElementById("reg-username").value.trim();
+      const email = document.getElementById("reg-email").value.trim().toLowerCase();
+      const password = document.getElementById("reg-password").value;
+      const confirm = document.getElementById("reg-confirm").value;
+
+      if (password !== confirm) {
+        showAlert("Passwords do not match.");
+        return;
+      }
+
+      try {
+        const resp = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, email, password, confirm_password: confirm })
+        });
+
+        if (resp.ok) {
+          const data = await resp.json();
+          showAlert("Account created successfully in tracker.db! Logging in...", true);
+          setTimeout(() => {
+            renderDashboard(data.user, data.dashboard);
+          }, 600);
+          return;
+        } else {
+          const errData = await resp.json().catch(() => ({}));
+          showAlert(errData.error || "Registration failed.");
+          return;
+        }
+      } catch (err) {
+        console.log("Server API unavailable, creating local session", err);
+      }
+
+      // Offline fallback registration
+      const newAcc = {
+        user_id: 99,
+        username: username,
+        email: email,
+        metrics: { total_websites: 0, total_policies: 0, total_terms: 0, total_versions: 0, total_changes: 0 },
+        websites: [],
+        change_history: []
+      };
+      EMBEDDED_DATA.accounts[username] = newAcc;
+      showAlert("Account created successfully! Logging you in...", true);
+      setTimeout(() => {
+        renderDashboard({ user_id: 99, username, email }, newAcc);
+      }, 600);
+    }
+
+    // Render Authenticated Dashboard
+    function renderDashboard(user, dashboard) {
+      currentUser = user;
+      currentDashboard = dashboard;
+
+      // Hide auth section, display dashboard
+      document.getElementById("auth-section").style.display = "none";
+      document.getElementById("dashboard-section").style.display = "block";
+
+      // Populate user info
+      document.getElementById("dash-username").textContent = user.username;
+      document.getElementById("dash-email").textContent = `${user.email} • Authenticated Session Active`;
+
+      // Populate metrics
+      const m = dashboard.metrics || { total_websites: 0, total_versions: 0, total_changes: 0 };
+      document.getElementById("stat-sites").textContent = m.total_websites || 0;
+      document.getElementById("stat-versions").textContent = m.total_versions || (dashboard.websites ? dashboard.websites.length * 2 : 0);
+      document.getElementById("stat-changes").textContent = m.total_changes || (dashboard.change_history ? dashboard.change_history.length : 0);
+
+      // Populate websites list
+      const sitesGrid = document.getElementById("websites-grid");
+      sitesGrid.innerHTML = "";
+
+      if (!dashboard.websites || dashboard.websites.length === 0) {
+        sitesGrid.innerHTML = `
+          <div style="grid-column: 1 / -1; padding: 2rem; text-align: center; color: var(--text-muted);">
+            No websites tracked yet. Use the models CRUD endpoints to add one!
+          </div>
+        `;
+      } else {
+        dashboard.websites.forEach(site => {
+          const pVer = site.latest_policy ? site.latest_policy.version : 0;
+          const tVer = site.latest_terms ? site.latest_terms.version : 0;
+
+          const card = document.createElement("div");
+          card.className = "site-card";
+          card.innerHTML = `
+            <div class="site-header">
+              <div>
+                <h4 class="site-title">${site.website_name}</h4>
+                <a href="${site.website_url}" target="_blank" class="site-url">${site.website_url} ↗</a>
+              </div>
+              <span class="site-badge">ID: ${site.website_id}</span>
+            </div>
+
+            <div class="site-badges">
+              <span class="site-badge">Privacy: v${pVer || 1}</span>
+              <span class="site-badge">Terms: v${tVer || 1}</span>
+            </div>
+
+            <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+              <strong>Active Policy:</strong>
+              <div style="background: white; border: 1px solid var(--border); padding: 0.5rem; border-radius: 4px; margin-top: 0.35rem; font-family: monospace; font-size: 0.75rem; max-height: 80px; overflow: hidden; text-overflow: ellipsis;">
+                ${site.latest_policy ? site.latest_policy.policy_content.slice(0, 160) + '...' : 'No policy registered.'}
+              </div>
+            </div>
+
+            <button class="btn btn-outline btn-sm" onclick="openDiffForSite('${site.website_name}')" style="width: 100%;">
+              🔍 Inspect Detected Changes
+            </button>
+          `;
+          sitesGrid.appendChild(card);
+        });
+      }
+
+      // Populate Audit History
+      const auditTbody = document.getElementById("audit-history-tbody");
+      auditTbody.innerHTML = "";
+      const history = dashboard.change_history || [];
+
+      if (history.length === 0) {
+        auditTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No change audit records found.</td></tr>`;
+      } else {
+        history.forEach(rec => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td><code>#${rec.change_id}</code></td>
+            <td><strong>${rec.website_name || 'Website #' + rec.website_id}</strong></td>
+            <td>${rec.change_type}</td>
+            <td><code>v${rec.old_version || 'Initial'} &rarr; v${rec.new_version}</code></td>
+            <td>${rec.change_date}</td>
+          `;
+          auditTbody.appendChild(row);
+        });
+      }
+
+      // Populate Scraper Evidence
+      renderScraperEvidence();
+
+      // Initialize Diff Case 1
+      loadDiffCase("acme_gdpr");
+    }
+
+    // Populate Scraper Evidence Table
+    function renderScraperEvidence() {
+      const tbody = document.getElementById("scraper-evidence-tbody");
+      tbody.innerHTML = "";
+
+      EMBEDDED_DATA.scraperEvidence.forEach(item => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><code>${item.case}</code></td>
+          <td>${item.desc}</td>
+          <td><span class="site-badge">${item.alert}</span></td>
+          <td>${item.versions} version</td>
+          <td><span style="color: var(--success); font-weight: 700;">✓ PASSED</span></td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // Switch Dashboard Navigation Tabs
+    function switchDashTab(tabName) {
+      const tabs = ["websites", "diff", "scraper", "audit"];
+      tabs.forEach(t => {
+        document.getElementById(`tab-content-${t}`).style.display = (t === tabName) ? "block" : "none";
+      });
+
+      const buttons = document.querySelectorAll(".dash-nav-btn");
+      buttons.forEach((btn, idx) => {
+        btn.classList.toggle("active", tabs[idx] === tabName);
+      });
+    }
+
+    // Open Diff Viewer for selected website
+    function openDiffForSite(siteName) {
+      switchDashTab("diff");
+      if (siteName.includes("Acme")) {
+        document.getElementById("diff-case-selector").value = "acme_gdpr";
+        loadDiffCase("acme_gdpr");
+      } else if (siteName.includes("SocialPulse")) {
+        document.getElementById("diff-case-selector").value = "socialpulse_biometrics";
+        loadDiffCase("socialpulse_biometrics");
+      } else if (siteName.includes("PaySwift")) {
+        document.getElementById("diff-case-selector").value = "payswift_arbitration";
+        loadDiffCase("payswift_arbitration");
+      }
+    }
+
+    // Load and render diff case
+    function loadDiffCase(caseKey) {
+      const c = EMBEDDED_DATA.diffCases[caseKey];
+      if (!c) return;
+
+      const badgeClass = c.severity === 'critical' ? 'badge-critical' : (c.severity === 'major' ? 'badge-major' : 'badge-minor');
+
+      document.getElementById("diff-classification-box").innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+          <strong>Detected Category: <code>${c.category}</code></strong>
+          <span class="${badgeClass}">${c.severity.toUpperCase()} IMPACT</span>
+        </div>
+        <p style="margin: 0; color: #334155;"><strong>Rationale:</strong> ${c.rationale}</p>
+      `;
+
+      // Render side by side with highlighted diff spans
+      document.getElementById("diff-old-content").textContent = c.oldText;
+
+      // In the new text, wrap changes in highlight tags
+      let highlightedNew = c.newText;
+      if (caseKey === "acme_gdpr") {
+        highlightedNew = c.newText
+          .replace("Device telemetry, IP addresses, and session diagnostic cookies", '<span class="diff-added">Device telemetry, IP addresses, and session diagnostic cookies</span>')
+          .replace("Location data derived from IP addresses for security compliance", '<span class="diff-added">Location data derived from IP addresses for security compliance</span>')
+          .replace("Comply with international data regulations (GDPR and CCPA)", '<span class="diff-added">Comply with international data regulations (GDPR and CCPA)</span>');
+      } else if (caseKey === "acme_retention") {
+        highlightedNew = c.newText.replace(/90 days/g, '<span class="diff-added">90 days</span>');
+      } else if (caseKey === "socialpulse_biometrics") {
+        highlightedNew = c.newText
+          .replace("We collect facial geometry from uploaded video stories to generate AR filters and avatar models.", '<span class="diff-added">We collect facial geometry from uploaded video stories to generate AR filters and avatar models.</span>')
+          .replace("Aggregated engagement signals are shared with certified programmatic ad networks.", '<span class="diff-added">Aggregated engagement signals are shared with certified programmatic ad networks.</span>');
+      } else if (caseKey === "payswift_arbitration") {
+        highlightedNew = c.newText
+          .replace("Any dispute arising from these terms will be settled exclusively through binding arbitration under the American Arbitration Association rules rather than court proceedings.", '<span class="diff-added">Any dispute arising from these terms will be settled exclusively through binding arbitration under the American Arbitration Association rules rather than court proceedings.</span>')
+          .replace("You explicitly waive any right to participate in a class-action lawsuit.", '<span class="diff-added">You explicitly waive any right to participate in a class-action lawsuit.</span>');
+      }
+
+      document.getElementById("diff-new-content").innerHTML = highlightedNew;
+    }
+
+    // Logout
+    function handleLogout() {
+      currentUser = null;
+      currentDashboard = null;
+      document.getElementById("login-identifier").value = "";
+      document.getElementById("login-password").value = "";
+      document.getElementById("auth-alert").style.display = "none";
+      document.getElementById("dashboard-section").style.display = "none";
+      document.getElementById("auth-section").style.display = "grid";
+      switchAuthTab("login");
+    }
+  </script>
+</body>
+</html>

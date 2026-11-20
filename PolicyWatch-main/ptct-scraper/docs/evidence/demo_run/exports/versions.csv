@@ -1,5 +1,0 @@
-source_id,version_no,first_seen,last_seen,content_hash,title,effective_date,snapshot_id
-acme-privacy,1,2026-11-01T09:00:00Z,2026-11-01T09:00:00Z,1ea6224118e95a94d68ff1cf5ff632de0465ece44d107750659e7bcd488c00ea,Privacy Policy,2026-01-01,1
-acme-privacy,2,2026-11-02T09:00:00Z,2026-11-06T09:00:00Z,1182bccba843770fe536434786be5e8d54f396e7925c932d977c3cefb5d258fa,Privacy Policy,2026-03-15,3
-acme-terms,1,2026-11-01T09:00:00Z,2026-11-01T09:00:00Z,19f29e9f180025cee83c044b7ae23a6a2d282cf132183b523ae7a7a5df149088,Terms of Service,2026-01-01,2
-acme-terms,2,2026-11-02T09:00:00Z,2026-11-07T09:00:00Z,2a088c81a002f674204032baac817a306fb253df0157101a3daace85d4c0d8cb,Terms of Service,2026-03-01,4
