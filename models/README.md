@@ -23,18 +23,21 @@ This project helps organizations, legal teams, compliance officers, and regular 
 
 ```text
 project/
-│
-├── app.py                  # Main Flask application (routes, controllers, auth session)
-├── database.py             # Database connectivity, helper utilities, and CRUD SQL functions
-├── schema.sql              # DDL SQL script defining tables, keys, and foreign constraints
-├── sample_data.py          # Database seeding script with realistic multi-version sample data
-├── diff_utils.py           # Pure Python diff comparison engine using built-in difflib
-├── test_app.py             # Automated unit and integration test suite
-├── requirements.txt        # Python package dependencies (Flask, Werkzeug)
-├── tracker.db              # SQLite relational database file
-├── README.md               # Detailed project documentation and run instructions
-│
-└── templates/              # Pure HTML Web Pages (Jinja2 templates)
+├── models/                 # Application code, database files, dependencies, and documentation
+│   ├── __init__.py
+│   ├── app.py              # Main Flask application (routes, controllers, auth session)
+│   ├── database.py         # Database helpers and CRUD SQL functions
+│   ├── schema.sql          # DDL defining tables, keys, and foreign constraints
+│   ├── tracker.db          # SQLite relational database file
+│   ├── diff_utils.py       # Pure Python diff comparison engine using built-in difflib
+│   ├── sample_data.py      # Sample-data seeding script
+│   ├── test_app.py         # Automated unit and integration test suite
+│   ├── requirements.txt    # Python package dependencies (Flask, Werkzeug)
+│   └── README.md           # Project documentation and run instructions
+├── change_detection/
+└── ptct-scraper/
+
+templates/                  # Pure HTML Web Pages (Jinja2 templates)
     ├── base.html           # Base layout (header, navigation, flash alerts, footer)
     ├── index.html          # Public Landing / Home Page
     ├── register.html       # User Registration Page
@@ -164,7 +167,7 @@ erDiagram
 
 ## 🔍 Pure Python Diff & Change Detection
 
-Without using any JavaScript, diff comparison is computed on the backend in Python using the standard `difflib` library in [diff_utils.py](file:///c:/Users/USER/OneDrive/Desktop/project/diff_utils.py):
+Without using any JavaScript, diff comparison is computed on the backend in Python using the standard `difflib` library in [diff_utils.py](diff_utils.py):
 
 1. **Change Metrics**:
    - Analyzes additions, deletions, and unchanged lines via `difflib.SequenceMatcher`.
@@ -192,20 +195,20 @@ Without using any JavaScript, diff comparison is computed on the backend in Pyth
 ### Step 3: Install Required Python Packages
 Run the following command in the VS Code terminal:
 ```powershell
-pip install -r requirements.txt
+pip install -r models/requirements.txt
 ```
 *(Flask and Werkzeug will be installed. `sqlite3` and `difflib` come pre-installed with Python).*
 
 ### Step 4: Populate Sample Data (Optional but Recommended)
 To pre-populate realistic sample websites, multi-version privacy policies, terms, and test accounts:
 ```powershell
-python sample_data.py
+python -m models.sample_data
 ```
 
 ### Step 5: Run the Web Application
 Start the Flask web server:
 ```powershell
-python app.py
+python -m models.app
 ```
 You will see output similar to:
 ```text
@@ -238,7 +241,7 @@ http://127.0.0.1:5000
 
 To run the complete automated test suite verifying all 12 test cases:
 ```powershell
-python test_app.py
+python -m models.test_app
 ```
 Output:
 ```text

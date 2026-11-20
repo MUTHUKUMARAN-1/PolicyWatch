@@ -14,10 +14,10 @@ from flask import (
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 
-import database as db
-import diff_utils
+from . import database as db
+from . import diff_utils
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='../templates')
 app.secret_key = os.environ.get('SECRET_KEY', 'privacy_tracker_super_secret_key_2024')
 
 # Ensure database is closed after each request

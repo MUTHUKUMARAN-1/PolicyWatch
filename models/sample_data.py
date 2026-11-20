@@ -8,7 +8,7 @@ and change history logs.
 import os
 import sqlite3
 from werkzeug.security import generate_password_hash
-from database import init_db, DATABASE_FILE
+from .database import init_db, DATABASE_FILE
 
 def seed_sample_data():
     conn = sqlite3.connect(DATABASE_FILE)

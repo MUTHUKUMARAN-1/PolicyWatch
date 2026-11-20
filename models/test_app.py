@@ -5,9 +5,9 @@ data validations, database cascades, and template rendering.
 """
 
 import unittest
-from app import app
-import database as db
-from sample_data import seed_sample_data
+from .app import app
+from . import database as db
+from .sample_data import seed_sample_data
 
 
 class PolicyTrackerTestCase(unittest.TestCase):
