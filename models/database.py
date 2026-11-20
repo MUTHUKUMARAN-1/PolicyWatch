@@ -15,9 +15,14 @@ import json
 from datetime import datetime, timezone
 from flask import g, has_app_context
 
-DATABASE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tracker.db')
-SCHEMA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'schema.sql')
+DATABASE_FILE = os.environ.get(
+    "POLICYWATCH_DB_PATH",
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "tracker.db")
+)
 
+os.makedirs(os.path.dirname(os.path.abspath(DATABASE_FILE)), exist_ok=True)
+
+SCHEMA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "schema.sql")
 
 def get_db():
     """
