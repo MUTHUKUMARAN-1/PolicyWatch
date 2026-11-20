@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+
+{% block title %}Compare Versions &bull; {{ website.website_name }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700; color: #1e293b;">
+      Document Comparison: {{ doc_title }}
+    </h2>
+    <p style="margin: 0.25rem 0 0 0; color: #64748b; font-size: 0.9rem;">
+      Website: <strong>{{ website.website_name }}</strong> ({{ website.domain }}) &bull; Comparing Version <strong>{{ v1 }}</strong> &rarr; Version <strong>{{ v2 }}</strong>
+    </p>
+  </div>
+  <div style="display: flex; gap: 0.5rem;">
+    <a href="{{ url_for('website_details', website_id=website.website_id) }}" class="btn btn-outline" style="font-size: 0.85rem;">
+      &larr; Back to Website Hub
+    </a>
+    <a href="{{ url_for('changes_list', site_id=website.website_id) }}" class="btn btn-outline" style="font-size: 0.85rem;">
+      View Detected Changes
+    </a>
+  </div>
+</div>
+
+{% if same_version_warning %}
+<div class="alert alert-warning" style="margin-bottom: 1.25rem;">
+  <strong>Notice:</strong> You have selected the same version (Version {{ v1 }}) for both baseline and comparison. The diff shows identical content. Select two different versions below to compare revisions.
+</div>
+{% endif %}
+
+<!-- Version & Display Selector Control Bar -->
+<div class="card" style="margin-bottom: 1.5rem; background: #f8fafc; border: 1px solid #e2e8f0; padding: 1.25rem;">
+  <form method="GET" action="{{ url_for('compare_versions') }}" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; margin: 0;">
+    <div style="flex: 1; min-width: 180px;">
+      <label for="website_id" style="font-weight: 600; font-size: 0.85rem; color: #475569; margin-bottom: 0.35rem; display: block;">Website:</label>
+      <select id="website_id" name="website_id" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+        {% for site in websites %}
+          <option value="{{ site.website_id }}" {% if site.website_id == website.website_id %}selected{% endif %}>
+            {{ site.website_name }} ({{ site.domain }})
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="flex: 1; min-width: 140px;">
+      <label for="type" style="font-weight: 600; font-size: 0.85rem; color: #475569; margin-bottom: 0.35rem; display: block;">Document:</label>
+      <select id="type" name="type" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+        <option value="policy" {% if doc_type == 'policy' %}selected{% endif %}>Privacy Policy</option>
+        <option value="terms" {% if doc_type == 'terms' %}selected{% endif %}>Terms & Conditions</option>
+      </select>
+    </div>
+
+    <div style="flex: 1; min-width: 150px;">
+      <label for="v1" style="font-weight: 600; font-size: 0.85rem; color: #475569; margin-bottom: 0.35rem; display: block;">Older Version (Base):</label>
+      <select id="v1" name="v1" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+        {% for item in all_versions %}
+          <option value="{{ item.version }}" {% if item.version == v1 %}selected{% endif %}>
+            Version {{ item.version }} ({{ item.updated_at[:10] }})
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="flex: 1; min-width: 150px;">
+      <label for="v2" style="font-weight: 600; font-size: 0.85rem; color: #475569; margin-bottom: 0.35rem; display: block;">Newer Version (Target):</label>
+      <select id="v2" name="v2" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+        {% for item in all_versions %}
+          <option value="{{ item.version }}" {% if item.version == v2 %}selected{% endif %}>
+            Version {{ item.version }} ({{ item.updated_at[:10] }})
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="flex: 1; min-width: 150px;">
+      <label for="mode" style="font-weight: 600; font-size: 0.85rem; color: #475569; margin-bottom: 0.35rem; display: block;">View Mode:</label>
+      <select id="mode" name="mode" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+        <option value="side_by_side" {% if view_mode == 'side_by_side' %}selected{% endif %}>Side-by-Side Comparison</option>
+        <option value="inline" {% if view_mode == 'inline' %}selected{% endif %}>Line-by-Line Unified Diff</option>
+      </select>
+    </div>
+
+    <div>
+      <button type="submit" class="btn btn-primary" style="padding: 0.55rem 1.25rem;">
+        Compare Versions
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Diff Statistics Cards -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+  <div class="card" style="padding: 1rem; text-align: center; border-left: 4px solid #10b981;">
+    <div style="font-size: 0.8rem; font-weight: 600; color: #047857; text-transform: uppercase;">Lines Added</div>
+    <div style="font-size: 1.75rem; font-weight: 800; color: #059669; margin-top: 0.25rem;">+{{ stats.additions }}</div>
+  </div>
+
+  <div class="card" style="padding: 1rem; text-align: center; border-left: 4px solid #ef4444;">
+    <div style="font-size: 0.8rem; font-weight: 600; color: #b91c1c; text-transform: uppercase;">Lines Removed</div>
+    <div style="font-size: 1.75rem; font-weight: 800; color: #dc2626; margin-top: 0.25rem;">-{{ stats.deletions }}</div>
+  </div>
+
+  <div class="card" style="padding: 1rem; text-align: center; border-left: 4px solid #64748b;">
+    <div style="font-size: 0.8rem; font-weight: 600; color: #475569; text-transform: uppercase;">Unchanged Lines</div>
+    <div style="font-size: 1.75rem; font-weight: 800; color: #334155; margin-top: 0.25rem;">{{ stats.unchanged }}</div>
+  </div>
+
+  <div class="card" style="padding: 1rem; text-align: center; border-left: 4px solid #6366f1;">
+    <div style="font-size: 0.8rem; font-weight: 600; color: #4338ca; text-transform: uppercase;">Classified Changes</div>
+    <div style="font-size: 1.75rem; font-weight: 800; color: #4f46e5; margin-top: 0.25rem;">
+      {{ classification_report.changes | length if classification_report and classification_report.changes else 0 }}
+    </div>
+  </div>
+</div>
+
+<!-- Module 4 NLP Semantic Classification Report (Change Detection Engine) -->
+{% if classification_report and classification_report.changes %}
+<div class="card" style="margin-bottom: 1.5rem; border: 1px solid #cbd5e1; background: #ffffff;">
+  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem; margin-bottom: 1rem;">
+    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
+      <span>Policy Change Analysis &amp; Legal Categorization</span>
+      <span style="font-size: 0.75rem; font-weight: 500; background: #e0e7ff; color: #3730a3; padding: 0.2rem 0.5rem; border-radius: 9999px;">
+        Powered by Change Detection Engine
+      </span>
+    </h3>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+    {% for ch in classification_report.changes %}
+      <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.9rem; background: #f8fafc;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.4rem;">
+          <div style="font-weight: 700; color: #1e293b; font-size: 0.95rem;">
+            {{ ch.title or ('Change: ' ~ ch.category) }}
+          </div>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <span class="badge" style="background: #e2e8f0; color: #334155; font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 4px;">
+              {{ ch.change_type | upper }}
+            </span>
+            <span class="badge badge-category">{{ ch.category }}</span>
+            <span class="badge badge-{{ ch.severity | lower }}">{{ ch.severity }} Severity</span>
+          </div>
+        </div>
+
+        {% if ch.reasons %}
+          <div style="margin-top: 0.5rem; font-size: 0.85rem; color: #475569;">
+            <strong style="color: #334155;">Classification Rationale:</strong>
+            <ul style="margin: 0.25rem 0 0 1.25rem; padding: 0;">
+              {% for r in ch.reasons %}
+                <li>{{ r }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        {% if ch.inline_diff %}
+          <div style="margin-top: 0.6rem; font-family: monospace; font-size: 0.8rem; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 4px; padding: 0.5rem; overflow-x: auto;">
+            {{ ch.inline_diff | safe }}
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Diff Document Viewer -->
+<div class="card" style="padding: 1.25rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">
+    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #1e293b;">
+      {% if view_mode == 'side_by_side' %}
+        Side-by-Side Comparison
+      {% else %}
+        Line-by-Line Unified Diff
+      {% endif %}
+    </h3>
+    <div style="font-size: 0.85rem; color: #64748b;">
+      Green = Added &bull; Red = Removed &bull; Grey = Unchanged
+    </div>
+  </div>
+
+  {% if view_mode == 'side_by_side' %}
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.82rem; line-height: 1.45;">
+        <thead>
+          <tr style="background: #f1f5f9; border-bottom: 2px solid #cbd5e1; text-align: left;">
+            <th style="width: 45px; padding: 6px 8px; color: #64748b; border-right: 1px solid #cbd5e1; text-align: center;">#</th>
+            <th style="width: 47%; padding: 6px 12px; color: #334155; border-right: 2px solid #94a3b8;">
+              Version {{ v1 }} {% if doc1 %}({{ doc1.updated_at[:10] }}){% endif %}
+            </th>
+            <th style="width: 45px; padding: 6px 8px; color: #64748b; border-right: 1px solid #cbd5e1; text-align: center;">#</th>
+            <th style="width: 47%; padding: 6px 12px; color: #334155;">
+              Version {{ v2 }} {% if doc2 %}({{ doc2.updated_at[:10] }}){% endif %}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for l_num, l_type, l_text, r_num, r_type, r_text in side_by_side_rows %}
+            <tr style="border-bottom: 1px solid #f1f5f9;">
+              <td style="padding: 3px 6px; color: #94a3b8; text-align: right; user-select: none; border-right: 1px solid #e2e8f0; background: #f8fafc;">
+                {{ l_num or '' }}
+              </td>
+              <td style="padding: 3px 10px; border-right: 2px solid #cbd5e1; white-space: pre-wrap; word-break: break-word; {% if l_type == 'delete' %}background: #fee2e2; color: #991b1b; font-weight: 600;{% endif %}">
+                {{ l_text | safe }}
+              </td>
+              <td style="padding: 3px 6px; color: #94a3b8; text-align: right; user-select: none; border-right: 1px solid #e2e8f0; background: #f8fafc;">
+                {{ r_num or '' }}
+              </td>
+              <td style="padding: 3px 10px; white-space: pre-wrap; word-break: break-word; {% if r_type == 'insert' %}background: #dcfce7; color: #166534; font-weight: 600;{% endif %}">
+                {{ r_text | safe }}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div style="border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; background: white;">
+      {{ inline_diff_html | safe }}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

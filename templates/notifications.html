@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications &bull; PolicyWatch{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700; color: #1e293b;">
+      Compliance Notification Center
+    </h2>
+    <p style="margin: 0.25rem 0 0 0; color: #64748b; font-size: 0.9rem;">
+      Real-time alerts triggered by web scraping checks, policy version updates, and detected modifications.
+    </p>
+  </div>
+
+  <div style="display: flex; gap: 0.5rem; align-items: center;">
+    {% if notifications %}
+      <a href="{{ url_for('mark_all_notifications_read') }}" class="btn btn-outline" style="font-size: 0.85rem;">
+        ✓ Mark All as Read
+      </a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Tabs / Filters -->
+<div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">
+  <a href="{{ url_for('notifications_hub') }}" style="text-decoration: none; padding: 0.45rem 1rem; border-radius: 6px; font-size: 0.9rem; font-weight: 600; {% if not unread_only %}background: #2563eb; color: white;{% else %}color: #64748b; background: #f1f5f9;{% endif %}">
+    All Notifications
+  </a>
+  <a href="{{ url_for('notifications_hub', filter='unread') }}" style="text-decoration: none; padding: 0.45rem 1rem; border-radius: 6px; font-size: 0.9rem; font-weight: 600; {% if unread_only %}background: #2563eb; color: white;{% else %}color: #64748b; background: #f1f5f9;{% endif %}">
+    Unread Only
+  </a>
+</div>
+
+<!-- Notification Feed -->
+<div class="card" style="padding: 0; overflow: hidden;">
+  {% if notifications %}
+    <div style="display: flex; flex-direction: column;">
+      {% for n in notifications %}
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9; {% if not n.is_read %}background: #f8fafc; border-left: 4px solid #2563eb;{% else %}opacity: 0.85;{% endif %}">
+          <div style="display: flex; gap: 1rem; align-items: flex-start;">
+            <div style="margin-top: 2px;">
+              {% if not n.is_read %}
+                <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #2563eb;"></span>
+              {% else %}
+                <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1;"></span>
+              {% endif %}
+            </div>
+
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <span style="font-weight: 700; color: #1e293b; font-size: 0.95rem;">
+                  {{ n.website_name or 'System Event' }}
+                </span>
+                {% if n.domain %}
+                  <span style="font-size: 0.8rem; color: #64748b;">({{ n.domain }})</span>
+                {% endif %}
+                <span class="badge" style="background: #e2e8f0; color: #475569; font-size: 0.72rem; padding: 0.15rem 0.45rem;">
+                  {{ n.notification_type or 'ALERT' }}
+                </span>
+              </div>
+
+              <div style="color: #334155; font-size: 0.9rem; margin-top: 0.35rem; line-height: 1.45;">
+                {{ n.message }}
+              </div>
+
+              <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 0.4rem;">
+                {{ n.created_at }}
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; align-items: center; white-space: nowrap; margin-left: 1rem;">
+            {% if n.website_id %}
+              <a href="{{ url_for('website_details', website_id=n.website_id) }}" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.3rem 0.65rem;">
+                View Site
+              </a>
+            {% endif %}
+
+            {% if not n.is_read %}
+              <a href="{{ url_for('mark_notification_read', notification_id=n.notification_id) }}" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.3rem 0.65rem; color: #166534; border-color: #bbf7d0;">
+                ✓ Read
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div style="padding: 3rem 1.5rem; text-align: center; color: #64748b;">
+      <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔔</div>
+      <h3 style="font-size: 1.15rem; font-weight: 600; color: #334155; margin: 0 0 0.5rem 0;">No notifications found</h3>
+      <p style="font-size: 0.9rem; margin: 0;">You're completely caught up! New change alerts will appear here automatically.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Change #{{ change.change_id }} Detail &bull; {{ change.website_name }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+      <a href="{{ url_for('changes_list') }}" style="color: #64748b; text-decoration: none; font-size: 0.85rem;">&larr; All Changes</a>
+      <span style="color: #cbd5e1;">/</span>
+      <span style="font-size: 0.85rem; color: #475569;">Change #{{ change.change_id }}</span>
+    </div>
+    <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700; color: #1e293b;">
+      {{ change.summary or (change.change_type ~ ' Revision') }}
+    </h2>
+    <p style="margin: 0.25rem 0 0 0; color: #64748b; font-size: 0.9rem;">
+      Website: <strong>{{ change.website_name }}</strong> ({{ change.domain }}) &bull; Document: <strong>{{ change.change_type }}</strong>
+    </p>
+  </div>
+
+  <div style="display: flex; gap: 0.5rem;">
+    <a href="{{ url_for('compare_versions', website_id=change.website_id, type='policy' if change.change_type == 'Privacy Policy' else 'terms', v1=change.old_version, v2=change.new_version) }}" class="btn btn-outline" style="font-size: 0.85rem;">
+      Open Full Diff Comparator
+    </a>
+    <a href="{{ url_for('website_details', website_id=change.website_id) }}" class="btn btn-outline" style="font-size: 0.85rem;">
+      Website Hub
+    </a>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; align-items: start;">
+  <!-- Left Column: Details & Diff -->
+  <div>
+    <!-- Metadata & Classification -->
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <h3 style="margin-top: 0; font-size: 1.15rem; font-weight: 700; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">
+        Change Classification &amp; Metadata
+      </h3>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 1rem;">
+        <div>
+          <span style="font-size: 0.75rem; text-transform: uppercase; color: #64748b; font-weight: 600; display: block;">Severity</span>
+          <div style="margin-top: 0.25rem;">
+            <span class="badge badge-{{ change.severity | lower }}">{{ change.severity }} Severity</span>
+          </div>
+        </div>
+
+        <div>
+          <span style="font-size: 0.75rem; text-transform: uppercase; color: #64748b; font-weight: 600; display: block;">Clause Category</span>
+          <div style="margin-top: 0.25rem;">
+            <span class="badge badge-category">{{ change.category }}</span>
+          </div>
+        </div>
+
+        <div>
+          <span style="font-size: 0.75rem; text-transform: uppercase; color: #64748b; font-weight: 600; display: block;">Version Transition</span>
+          <div style="margin-top: 0.25rem; font-weight: 600; color: #1e293b;">
+            Version {{ change.old_version or 0 }} &rarr; Version {{ change.new_version }}
+          </div>
+        </div>
+
+        <div>
+          <span style="font-size: 0.75rem; text-transform: uppercase; color: #64748b; font-weight: 600; display: block;">Detection Timestamp</span>
+          <div style="margin-top: 0.25rem; color: #475569; font-size: 0.85rem;">
+            {{ change.timestamp }}
+          </div>
+        </div>
+      </div>
+
+      {% if change.reasons %}
+        <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid #f1f5f9;">
+          <strong style="font-size: 0.85rem; color: #334155; display: block; margin-bottom: 0.25rem;">Legal Rationale / Detection Triggers:</strong>
+          <div style="font-size: 0.88rem; color: #475569; background: #f8fafc; padding: 0.75rem; border-radius: 6px; border: 1px solid #e2e8f0;">
+            {{ change.reasons }}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Inline Diff View -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; margin-bottom: 1rem;">
+        <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #1e293b;">
+          Document Diff
+        </h3>
+        <span style="font-size: 0.8rem; color: #64748b;">
+          Green: Added &bull; Red: Removed
+        </span>
+      </div>
+
+      <div style="border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; background: white;">
+        {{ diff_html | safe }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Review Status Workflow -->
+  <div>
+    <div class="card" style="border: 1px solid #cbd5e1; background: #ffffff;">
+      <h3 style="margin-top: 0; font-size: 1.15rem; font-weight: 700; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">
+        Review &amp; Audit Workflow
+      </h3>
+
+      <div style="margin: 1rem 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <span style="font-size: 0.85rem; color: #64748b;">Current Status:</span>
+          <span class="badge badge-{{ change.review_status | lower }}">{{ change.review_status | upper }}</span>
+        </div>
+
+        {% if change.reviewed_by %}
+          <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.5rem;">
+            Last reviewed by <strong>{{ change.reviewed_by }}</strong>
+          </div>
+        {% endif %}
+
+        {% if change.review_notes %}
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 0.6rem; font-size: 0.85rem; color: #475569; margin-bottom: 1rem;">
+            <strong>Reviewer Note:</strong><br>{{ change.review_notes }}
+          </div>
+        {% endif %}
+      </div>
+
+      <form method="POST" action="{{ url_for('update_change_review', change_id=change.change_id) }}">
+        <label for="review_status" style="font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 0.35rem; display: block;">
+          Update Decision:
+        </label>
+        <select id="review_status" name="review_status" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; margin-bottom: 0.75rem;">
+          <option value="confirmed" {% if change.review_status == 'confirmed' %}selected{% endif %}>Confirmed (Verified Legal Change)</option>
+          <option value="rejected" {% if change.review_status == 'rejected' %}selected{% endif %}>Rejected (False Positive / Negligible)</option>
+          <option value="unreviewed" {% if change.review_status == 'unreviewed' %}selected{% endif %}>Unreviewed (Needs Investigation)</option>
+        </select>
+
+        <label for="review_notes" style="font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 0.35rem; display: block;">
+          Audit Notes (Optional):
+        </label>
+        <textarea id="review_notes" name="review_notes" rows="3" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; margin-bottom: 1rem;" placeholder="Add verification commentary or legal compliance notes...">{{ change.review_notes or '' }}</textarea>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.6rem;">
+          Save Review Decision
+        </button>
+      </form>
+    </div>
+
+    <!-- Website Quick Card -->
+    <div class="card" style="margin-top: 1.5rem; background: #f8fafc;">
+      <h4 style="margin: 0 0 0.5rem 0; font-size: 0.95rem; color: #334155;">Tracked Source</h4>
+      <div style="font-size: 0.85rem; color: #475569; line-height: 1.6;">
+        <div><strong>Name:</strong> {{ change.website_name }}</div>
+        <div><strong>Domain:</strong> {{ change.domain }}</div>
+        <div>
+          <strong>URL:</strong>
+          <a href="{{ change.website_url }}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; word-break: break-all;">
+            {{ change.website_url }}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

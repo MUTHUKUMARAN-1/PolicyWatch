@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Complete Change Audit History - PolicyWatch{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Complete Change Audit History</h2>
+  <p style="color: #64748b; font-size: 0.9rem;">
+    Comprehensive system audit log tracking all modifications across your monitored websites.
+  </p>
+
+  {% if history_records %}
+    <table>
+      <thead>
+        <tr>
+          <th>Change ID</th>
+          <th>Website Name</th>
+          <th>Document Type</th>
+          <th>Version Transition</th>
+          <th>Audit Timestamp</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rec in history_records %}
+          <tr>
+            <td><code>#{{ rec.change_id }}</code></td>
+            <td><strong>{{ rec.website_name }}</strong></td>
+            <td>{{ rec.change_type }}</td>
+            <td><code>v{{ rec.old_version or 'Initial' }} &rarr; v{{ rec.new_version }}</code></td>
+            <td>{{ rec.change_date }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p style="color: #64748b; margin-top: 1rem;">No change events have been logged yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

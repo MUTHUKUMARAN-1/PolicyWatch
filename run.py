@@ -1,28 +1,49 @@
-"""Root launcher for PTCT Web Application.
-Allows running `python run.py` directly from workspace root.
+"""
+PolicyWatch - Unified Application Runner
+Entry point for running the integrated PolicyWatch Web Application.
 """
 import os
 import sys
-from pathlib import Path
 
-ROOT_DIR = Path(__file__).parent.resolve()
-PTCT_DIR = ROOT_DIR / "ptct-scraper"
+# Ensure repository root and submodule paths are in sys.path
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
-if str(PTCT_DIR) not in sys.path:
-    sys.path.insert(0, str(PTCT_DIR))
+models_path = os.path.join(PROJECT_ROOT, 'models')
+if models_path not in sys.path:
+    sys.path.insert(0, models_path)
 
-os.chdir(str(PTCT_DIR))
+from models import database as db
+from models.app import app
 
-from app import app
+def main():
+    print("=" * 65)
+    print("   POLICYWATCH - Privacy Policy & Terms Change Tracker")
+    print("   Unified System: Scraping, Storage, Auth, Diff & Alerts")
+    print("=" * 65)
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    host = os.environ.get("HOST", "127.0.0.1")
-    debug = os.environ.get("FLASK_DEBUG", "True").lower() in ("true", "1")
-    print(f"\n=======================================================")
-    print(f" [PTCT] Privacy Policy & Terms Change Tracker Web App")
-    print(f" Server running at: http://{host}:{port}")
-    print(f" Default Admin: admin / Admin@PTCT2026!")
-    print(f"=======================================================\n")
-    app.run(host=host, port=port, debug=debug)
+    # Initialize database if needed
+    db_file = db.DATABASE_FILE
+    if not os.path.exists(db_file):
+        print("[*] Initializing tracker database...")
+        db.init_db()
+        from models import sample_data
+        sample_data.insert_sample_data()
+        print("[+] Seeded sample data successfully.")
+    else:
+        # Run automatic migrations/upgrades if any column/table was added
+        db.ensure_schema_upgrades()
+        print(f"[+] Connected to database: {db_file}")
 
+    print("\n[+] Demo Accounts Available:")
+    print("    - Admin:    admin / admin123")
+    print("    - User:     john_doe / password123")
+    print("\n[*] Starting server on http://127.0.0.1:5000 ...")
+    print("    Press Ctrl+C to stop.")
+    print("=" * 65 + "\n")
+
+    app.run(host="127.0.0.1", port=5000, debug=True)
+
+if __name__ == '__main__':
+    main()

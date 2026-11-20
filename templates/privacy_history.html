@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Privacy Policy Version History - {{ website.website_name }}{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+    <div>
+      <h2>Privacy Policy Version History</h2>
+      <p style="color: #64748b; font-size: 0.9rem;">
+        Complete historical archive of all Privacy Policy versions stored for <strong>{{ website.website_name }}</strong>.
+      </p>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+      <a href="{{ url_for('update_privacy_policy', website_id=website.website_id) }}" style="display: inline-block; background: #2563eb; color: white; padding: 0.5rem 0.85rem; border-radius: 4px; text-decoration: none; font-size: 0.85rem; font-weight: 600;">+ New Revision</a>
+      <a href="{{ url_for('website_details', website_id=website.website_id) }}" style="display: inline-block; background: white; border: 1px solid #cbd5e1; padding: 0.5rem 0.85rem; border-radius: 4px; text-decoration: none; color: #334155; font-size: 0.85rem;">&larr; Back to Hub</a>
+    </div>
+  </div>
+
+  {% if versions %}
+    <table>
+      <thead>
+        <tr>
+          <th>Version Number</th>
+          <th>Last Updated</th>
+          <th>Content Preview</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in versions %}
+          <tr>
+            <td>
+              <strong>Version {{ v.version }}</strong>
+              {% if loop.first %}
+                <span style="background: #dcfce7; color: #166534; font-size: 0.72rem; padding: 0.15rem 0.4rem; border-radius: 3px; margin-left: 0.25rem;">Active</span>
+              {% endif %}
+            </td>
+            <td>{{ v.updated_at }}</td>
+            <td style="font-family: monospace; font-size: 0.8rem; max-width: 380px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              {{ v.policy_content[:80] }}...
+            </td>
+            <td>
+              {% if not loop.last %}
+                <a href="{{ url_for('compare_versions', website_id=website.website_id) }}?type=policy&v1={{ versions[loop.index].version }}&v2={{ v.version }}" style="color: #2563eb; font-weight: 600;">Compare with v{{ versions[loop.index].version }}</a>
+              {% else %}
+                <span style="color: #94a3b8;">Initial Version</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p style="color: #64748b; margin-top: 1rem;">No versions stored yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

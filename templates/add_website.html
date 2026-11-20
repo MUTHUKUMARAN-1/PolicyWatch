@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Add New Website - PolicyWatch{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 650px; margin: 2rem auto;">
+  <h2>Add New Website to Track</h2>
+  <p style="color: #64748b; font-size: 0.9rem;">
+    Register a domain name and optional initial Privacy Policy or Terms &amp; Conditions text.
+  </p>
+
+  <form method="POST" action="{{ url_for('add_website') }}">
+    <fieldset>
+      <legend>Website Details</legend>
+
+      <label for="website_name">Website Name *</label>
+      <input
+        type="text"
+        id="website_name"
+        name="website_name"
+        value="{{ website_name or '' }}"
+        placeholder="e.g. Acme Cloud Services"
+        required
+        autofocus
+      >
+
+      <label for="website_url">Website URL *</label>
+      <input
+        type="text"
+        id="website_url"
+        name="website_url"
+        value="{{ website_url or '' }}"
+        placeholder="https://example.com"
+        required
+      >
+    </fieldset>
+
+    <fieldset>
+      <legend>Initial Policy Documents (Optional)</legend>
+
+      <label for="initial_policy">Initial Privacy Policy Content</label>
+      <textarea
+        id="initial_policy"
+        name="initial_policy"
+        placeholder="Paste initial Privacy Policy text here (will be stored as Version 1)..."
+      ></textarea>
+
+      <label for="initial_terms">Initial Terms &amp; Conditions Content</label>
+      <textarea
+        id="initial_terms"
+        name="initial_terms"
+        placeholder="Paste initial Terms of Service text here (will be stored as Version 1)..."
+      ></textarea>
+    </fieldset>
+
+    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+      <button type="submit">Save &amp; Start Tracking</button>
+      <a href="{{ url_for('dashboard') }}" style="display: inline-block; padding: 0.65rem 1.25rem; border: 1px solid #cbd5e1; border-radius: 4px; text-decoration: none; color: #334155; font-weight: 500; margin-top: 1rem;">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

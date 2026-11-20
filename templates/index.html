@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Privacy Policy &amp; Terms Change Tracker - Home{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align: center; padding: 3rem 1.5rem;">
+  <h2>Privacy Policy &amp; Terms Change Tracker</h2>
+  <p style="max-width: 650px; margin: 1rem auto; font-size: 1.05rem; color: #475569;">
+    A complete Database Management System (DBMS) web application to track, version,
+    and detect modifications in website Privacy Policies and Terms &amp; Conditions over time.
+  </p>
+
+  <div style="margin: 2rem 0; display: flex; justify-content: center; gap: 1rem;">
+    <a href="{{ url_for('login') }}" style="display: inline-block; background: #2563eb; color: white; padding: 0.75rem 1.75rem; border-radius: 6px; text-decoration: none; font-weight: 600;">
+      User Login &rarr;
+    </a>
+    <a href="{{ url_for('register') }}" style="display: inline-block; background: white; color: #1e293b; border: 1px solid #cbd5e1; padding: 0.75rem 1.75rem; border-radius: 6px; text-decoration: none; font-weight: 600;">
+      Create Account
+    </a>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; text-align: left; margin-top: 3rem;">
+    <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 1.25rem; background: #fafbfc;">
+      <h3 style="margin-top: 0; font-size: 1rem; color: #0f172a;">🗄️ Relational DBMS</h3>
+      <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 0;">
+        SQLite relational database (<code>tracker.db</code>) with full foreign key constraints, cascading deletions, and multi-version document storage.
+      </p>
+    </div>
+
+    <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 1.25rem; background: #fafbfc;">
+      <h3 style="margin-top: 0; font-size: 1rem; color: #0f172a;">🔍 Change Detection</h3>
+      <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 0;">
+        Automated diff engine with side-by-side comparison, unified line diffs, and change classification.
+      </p>
+    </div>
+
+    <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 1.25rem; background: #fafbfc;">
+      <h3 style="margin-top: 0; font-size: 1rem; color: #0f172a;">🌐 Web Scraping Module</h3>
+      <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 0;">
+        Automated data collection and revision tracking with snapshots, content hashing, and evaluation cases.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

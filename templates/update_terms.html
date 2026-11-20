@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Update Terms &amp; Conditions - {{ website.website_name }}{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 750px; margin: 2rem auto;">
+  <h2>Update Terms &amp; Conditions</h2>
+  <p style="color: #64748b; font-size: 0.9rem;">
+    Target Website: <strong>{{ website.website_name }}</strong> &bull;
+    Current Version: {% if latest %}Version {{ latest.version }}{% else %}None{% endif %}
+  </p>
+
+  <form method="POST" action="{{ url_for('update_terms_conditions', website_id=website.website_id) }}">
+    <fieldset>
+      <legend>New Revision Content</legend>
+
+      <label for="terms_content">Terms &amp; Conditions Text (Submitting will increment version number)</label>
+      <textarea
+        id="terms_content"
+        name="terms_content"
+        rows="12"
+        required
+        placeholder="Paste full updated terms content here..."
+      >{% if latest %}{{ latest.terms_content }}{% endif %}</textarea>
+    </fieldset>
+
+    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+      <button type="submit">Save New Version</button>
+      <a href="{{ url_for('website_details', website_id=website.website_id) }}" style="display: inline-block; padding: 0.65rem 1.25rem; border: 1px solid #cbd5e1; border-radius: 4px; text-decoration: none; color: #334155; font-weight: 500; margin-top: 1rem;">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

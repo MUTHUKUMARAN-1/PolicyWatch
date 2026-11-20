@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}User Profile &bull; PolicyWatch{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem;">
+  <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700; color: #1e293b;">
+    User Account &amp; Compliance Profile
+  </h2>
+  <p style="margin: 0.25rem 0 0 0; color: #64748b; font-size: 0.9rem;">
+    Manage your account credentials, security preferences, and workspace summary.
+  </p>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start;">
+  <!-- Account Details Card -->
+  <div class="card">
+    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem;">
+      <div style="width: 56px; height: 56px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700;">
+        {{ user.username[:1] | upper }}
+      </div>
+      <div>
+        <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #1e293b;">
+          {{ user.username }}
+        </h3>
+        <span style="font-size: 0.85rem; color: #64748b;">
+          {{ user.email }}
+        </span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.9rem;">
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f8fafc; padding-bottom: 0.4rem;">
+        <span style="color: #64748b;">User ID:</span>
+        <span style="font-weight: 600; color: #334155;">#{{ user.user_id }}</span>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f8fafc; padding-bottom: 0.4rem;">
+        <span style="color: #64748b;">Account Status:</span>
+        <span class="badge badge-confirmed">Active / Authenticated</span>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f8fafc; padding-bottom: 0.4rem;">
+        <span style="color: #64748b;">Member Since:</span>
+        <span style="font-weight: 500; color: #334155;">{{ user.created_at[:10] if user.created_at else 'Active' }}</span>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; padding-bottom: 0.4rem;">
+        <span style="color: #64748b;">Session Auth:</span>
+        <span style="font-weight: 500; color: #334155;">Secure PBKDF2:SHA256</span>
+      </div>
+    </div>
+
+    <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem;">
+      <a href="{{ url_for('logout') }}" class="btn btn-outline" style="color: #dc2626; border-color: #fca5a5;">
+        Log Out
+      </a>
+    </div>
+  </div>
+
+  <!-- Workspace Activity Stats -->
+  <div>
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <h3 style="margin-top: 0; font-size: 1.15rem; font-weight: 700; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">
+        Monitored Assets &amp; Activity
+      </h3>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem; text-align: center;">
+          <div style="font-size: 0.8rem; font-weight: 600; color: #64748b; text-transform: uppercase;">Tracked Domains</div>
+          <div style="font-size: 1.5rem; font-weight: 800; color: #2563eb; margin-top: 0.25rem;">{{ stats.total_websites }}</div>
+        </div>
+
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem; text-align: center;">
+          <div style="font-size: 0.8rem; font-weight: 600; color: #64748b; text-transform: uppercase;">Total Revisions</div>
+          <div style="font-size: 1.5rem; font-weight: 800; color: #10b981; margin-top: 0.25rem;">{{ stats.total_policies + stats.total_terms }}</div>
+        </div>
+
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem; text-align: center;">
+          <div style="font-size: 0.8rem; font-weight: 600; color: #64748b; text-transform: uppercase;">Detected Changes</div>
+          <div style="font-size: 1.5rem; font-weight: 800; color: #f59e0b; margin-top: 0.25rem;">{{ stats.total_changes }}</div>
+        </div>
+
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem; text-align: center;">
+          <div style="font-size: 0.8rem; font-weight: 600; color: #64748b; text-transform: uppercase;">Unread Alerts</div>
+          <div style="font-size: 1.5rem; font-weight: 800; color: #6366f1; margin-top: 0.25rem;">{{ stats.unread_notifications }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Domains Card -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; margin-bottom: 0.75rem;">
+        <h4 style="margin: 0; font-size: 1rem; font-weight: 700; color: #1e293b;">
+          Assigned Monitored Domains
+        </h4>
+        <a href="{{ url_for('add_website') }}" style="font-size: 0.8rem; color: #2563eb; text-decoration: none; font-weight: 600;">
+          + Add New
+        </a>
+      </div>
+
+      {% if websites %}
+        <ul style="list-style: none; padding: 0; margin: 0;">
+          {% for w in websites %}
+            <li style="display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0; border-bottom: 1px solid #f8fafc; font-size: 0.88rem;">
+              <span><strong>{{ w.website_name }}</strong> ({{ w.domain }})</span>
+              <a href="{{ url_for('website_details', website_id=w.website_id) }}" style="color: #2563eb; text-decoration: none; font-size: 0.8rem;">
+                Manage &rarr;
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p style="font-size: 0.85rem; color: #64748b; margin: 0;">No websites tracked yet under this account.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

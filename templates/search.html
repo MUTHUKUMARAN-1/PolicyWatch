@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+
+{% block title %}Search &amp; Filter &bull; PolicyWatch{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div style="margin-bottom: 1.5rem;">
+  <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--secondary);">Unified Search &amp; Multi-Criteria Filtering</h2>
+  <p style="color: var(--text-muted); font-size: 0.9rem;">
+    Search across monitored websites, policy text, terms of service, change summaries, and semantic classifications.
+  </p>
+</div>
+
+<!-- Search & Filtering Control Card -->
+<div class="card">
+  <form method="GET" action="{{ url_for('search') }}">
+
+    <!-- Primary Keyword Search Bar -->
+    <div style="margin-bottom: 1.25rem;">
+      <label for="q" style="font-size: 0.9rem; font-weight: 700;">Search Keyword / Query</label>
+      <div style="display: flex; gap: 0.5rem;">
+        <input
+          type="text"
+          id="q"
+          name="q"
+          value="{{ query_str or '' }}"
+          placeholder="Search by website name, URL, clause keyword (e.g., 'GDPR', 'arbitration', 'telemetry', 'retention')..."
+          style="flex: 1;"
+          autofocus
+        >
+        <button type="submit" class="btn btn-primary" style="padding: 0.6rem 1.25rem;">Search</button>
+        {% if query_str or site_id or (severity and severity != 'all') or (category and category != 'all') or (review_status and review_status != 'all') or date_from or date_to %}
+          <a href="{{ url_for('search') }}" class="btn btn-outline" style="padding: 0.6rem 1rem;">Reset</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Multi-Criteria Filter Controls -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border);">
+
+      <!-- Website Filter -->
+      <div>
+        <label for="site_id">Website Domain</label>
+        <select id="site_id" name="site_id">
+          <option value="">All Tracked Websites</option>
+          {% for w in websites %}
+            <option value="{{ w.website_id }}" {% if site_id == w.website_id %}selected{% endif %}>
+              {{ w.website_name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Document Type Filter -->
+      <div>
+        <label for="change_type">Document Type</label>
+        <select id="change_type" name="change_type">
+          <option value="all" {% if change_type == 'all' %}selected{% endif %}>All Documents</option>
+          <option value="Privacy Policy" {% if change_type == 'Privacy Policy' %}selected{% endif %}>Privacy Policy</option>
+          <option value="Terms &amp; Conditions" {% if change_type == 'Terms &amp; Conditions' %}selected{% endif %}>Terms &amp; Conditions</option>
+        </select>
+      </div>
+
+      <!-- Severity Filter -->
+      <div>
+        <label for="severity">Severity Level</label>
+        <select id="severity" name="severity">
+          <option value="all" {% if severity == 'all' %}selected{% endif %}>All Severities</option>
+          {% for s in severities %}
+            <option value="{{ s }}" {% if severity == s %}selected{% endif %}>{{ s|capitalize }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Category Filter -->
+      <div>
+        <label for="category">Clause Category</label>
+        <select id="category" name="category">
+          <option value="all" {% if category == 'all' %}selected{% endif %}>All Categories</option>
+          {% for c in categories %}
+            <option value="{{ c }}" {% if category == c %}selected{% endif %}>{{ c|replace('_', ' ')|capitalize }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Review Status Filter -->
+      <div>
+        <label for="review_status">Review Status</label>
+        <select id="review_status" name="review_status">
+          <option value="all" {% if review_status == 'all' %}selected{% endif %}>All Statuses</option>
+          <option value="unreviewed" {% if review_status == 'unreviewed' %}selected{% endif %}>Unreviewed</option>
+          <option value="confirmed" {% if review_status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+          <option value="rejected" {% if review_status == 'rejected' %}selected{% endif %}>Rejected</option>
+        </select>
+      </div>
+
+      <!-- Date Range (From) -->
+      <div>
+        <label for="date_from">Date From</label>
+        <input type="date" id="date_from" name="date_from" value="{{ date_from or '' }}">
+      </div>
+
+      <!-- Date Range (To) -->
+      <div>
+        <label for="date_to">Date To</label>
+        <input type="date" id="date_to" name="date_to" value="{{ date_to or '' }}">
+      </div>
+
+    </div>
+
+    <div style="margin-top: 1rem; display: flex; justify-content: flex-end; gap: 0.5rem;">
+      <button type="submit" class="btn btn-primary btn-sm">Apply All Filters</button>
+    </div>
+
+  </form>
+</div>
+
+<!-- Search Results Section -->
+<div class="card">
+  <div class="card-header">
+    <div>
+      <h3 class="card-title">Search &amp; Filter Results</h3>
+      <p class="card-subtitle">
+        Found <strong>{{ total_results }}</strong> matching record{% if total_results != 1 %}s{% endif %} in relational database.
+      </p>
+    </div>
+  </div>
+
+  <!-- Matching Websites (if any) -->
+  {% if matching_sites %}
+    <div style="margin-bottom: 1.5rem;">
+      <h4 style="font-size: 0.92rem; color: var(--secondary); margin-bottom: 0.5rem;">Matching Websites ({{ matching_sites|length }})</h4>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.75rem;">
+        {% for site in matching_sites %}
+          <div style="border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem 1rem; background: #fafbfc; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong style="font-size: 0.9rem; color: var(--secondary);">{{ site.website_name }}</strong>
+              <div style="font-size: 0.75rem; color: var(--text-muted);"><a href="{{ site.website_url }}" target="_blank" style="color: var(--primary);">{{ site.website_url }} ↗</a></div>
+            </div>
+            <a href="{{ url_for('website_details', website_id=site.website_id) }}" class="btn btn-outline btn-sm">View Hub &rarr;</a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Matching Changes Table -->
+  {% if results %}
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Change ID</th>
+            <th>Website Domain</th>
+            <th>Document</th>
+            <th>Transition</th>
+            <th>Severity</th>
+            <th>Category</th>
+            <th>Summary / Details</th>
+            <th>Review Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ch in results %}
+            <tr>
+              <td><code>#{{ ch.change_id }}</code></td>
+              <td>
+                <strong>{{ ch.website_name }}</strong>
+                <br>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">{{ ch.change_date[:10] }}</span>
+              </td>
+              <td>{{ ch.change_type }}</td>
+              <td><code>v{{ ch.old_version or 'Init' }} &rarr; v{{ ch.new_version }}</code></td>
+              <td>
+                {% if ch.severity == 'critical' %}
+                  <span class="badge badge-critical">Critical</span>
+                {% elif ch.severity == 'major' %}
+                  <span class="badge badge-major">Major</span>
+                {% else %}
+                  <span class="badge badge-moderate">{{ ch.severity or 'Moderate' }}</span>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge badge-category">{{ ch.category or 'general' }}</span>
+              </td>
+              <td style="max-width: 320px;">
+                <div style="font-weight: 500; font-size: 0.85rem; color: var(--secondary);">
+                  {{ ch.summary or 'Document modification logged.' }}
+                </div>
+                {% if ch.reasons %}
+                  <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">
+                    {{ ch.reasons[:90] }}{% if ch.reasons|length > 90 %}...{% endif %}
+                  </div>
+                {% endif %}
+              </td>
+              <td>
+                {% if ch.review_status == 'confirmed' %}
+                  <span class="badge badge-fresh">Confirmed</span>
+                {% elif ch.review_status == 'rejected' %}
+                  <span class="badge badge-stale">Rejected</span>
+                {% else %}
+                  <span class="badge badge-minor">Unreviewed</span>
+                {% endif %}
+              </td>
+              <td>
+                <div style="display: flex; gap: 0.35rem;">
+                  <a href="{{ url_for('change_detail', change_id=ch.change_id) }}" class="btn btn-outline btn-sm">Inspect</a>
+                  <a href="{{ url_for('compare_versions') }}?website_id={{ ch.website_id }}&type={% if ch.change_type == 'Privacy Policy' %}policy{% else %}terms{% endif %}&v1={{ ch.old_version or 1 }}&v2={{ ch.new_version }}" class="btn btn-outline btn-sm">Diff</a>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div style="text-align: center; padding: 3rem 1.5rem; color: var(--text-muted);">
+      <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔍</div>
+      <h4 style="font-size: 1.1rem; color: var(--secondary); margin-bottom: 0.25rem;">No Records Found</h4>
+      <p style="font-size: 0.85rem; margin-bottom: 1rem;">
+        No websites or policy changes matched your search query or filter combination.
+      </p>
+      <a href="{{ url_for('search') }}" class="btn btn-primary btn-sm">Reset All Filters</a>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}

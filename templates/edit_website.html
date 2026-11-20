@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Website - PolicyWatch{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 2rem auto;">
+  <h2>Edit Website</h2>
+  <p style="color: #64748b; font-size: 0.9rem;">
+    Update website title and official destination URL.
+  </p>
+
+  <form method="POST" action="{{ url_for('edit_website', website_id=website.website_id) }}">
+    <fieldset>
+      <legend>Website Profile</legend>
+
+      <label for="website_name">Website Name *</label>
+      <input
+        type="text"
+        id="website_name"
+        name="website_name"
+        value="{{ website.website_name }}"
+        required
+        autofocus
+      >
+
+      <label for="website_url">Website URL *</label>
+      <input
+        type="text"
+        id="website_url"
+        name="website_url"
+        value="{{ website.website_url }}"
+        required
+      >
+    </fieldset>
+
+    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+      <button type="submit">Update Website</button>
+      <a href="{{ url_for('website_details', website_id=website.website_id) }}" style="display: inline-block; padding: 0.65rem 1.25rem; border: 1px solid #cbd5e1; border-radius: 4px; text-decoration: none; color: #334155; font-weight: 500; margin-top: 1rem;">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

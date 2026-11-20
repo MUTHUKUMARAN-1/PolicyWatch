@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard &bull; PolicyWatch Compliance Tracker{% endblock %}
+
+{% block content %}
+
+<!-- Header & Quick Actions -->
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--secondary);">System Dashboard</h2>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">
+      Real-time compliance intelligence, policy version histories, and automated change tracking.
+    </p>
+  </div>
+  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <a href="{{ url_for('add_website') }}" class="btn btn-primary">+ Add Website</a>
+    <a href="{{ url_for('search') }}" class="btn btn-outline">🔍 Search &amp; Filter</a>
+    <a href="{{ url_for('compare_versions') }}" class="btn btn-outline">⚖️ Diff Viewer</a>
+    <a href="{{ url_for('scraper_hub') }}" class="btn btn-outline">🔄 Scraper Hub</a>
+  </div>
+</div>
+
+<!-- Primary Metrics Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+  <div class="card" style="margin: 0; padding: 1.25rem;">
+    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Websites Tracked</div>
+    <div style="font-size: 2rem; font-weight: 800; color: var(--secondary); margin: 0.25rem 0;">{{ stats.website_count }}</div>
+    <div style="font-size: 0.75rem; color: var(--text-muted);">Active domains</div>
+  </div>
+
+  <div class="card" style="margin: 0; padding: 1.25rem;">
+    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Policy Versions Stored</div>
+    <div style="font-size: 2rem; font-weight: 800; color: var(--primary); margin: 0.25rem 0;">{{ stats.policy_count }}</div>
+    <div style="font-size: 0.75rem; color: var(--text-muted);">Archived privacy revisions</div>
+  </div>
+
+  <div class="card" style="margin: 0; padding: 1.25rem;">
+    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Terms Versions Stored</div>
+    <div style="font-size: 2rem; font-weight: 800; color: #7c3aed; margin: 0.25rem 0;">{{ stats.terms_count }}</div>
+    <div style="font-size: 0.75rem; color: var(--text-muted);">Terms &amp; conditions revisions</div>
+  </div>
+
+  <div class="card" style="margin: 0; padding: 1.25rem;">
+    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Total Changes Detected</div>
+    <div style="font-size: 2rem; font-weight: 800; color: #d97706; margin: 0.25rem 0;">{{ stats.change_count }}</div>
+    <div style="font-size: 0.75rem; color: var(--text-muted);">Logged in ChangeHistory</div>
+  </div>
+
+  <div class="card" style="margin: 0; padding: 1.25rem;">
+    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Major / Critical Alerts</div>
+    <div style="font-size: 2rem; font-weight: 800; color: var(--danger); margin: 0.25rem 0;">{{ stats.major_changes }}</div>
+    <div style="font-size: 0.75rem; color: var(--text-muted);">High impact modifications</div>
+  </div>
+
+  <div class="card" style="margin: 0; padding: 1.25rem;">
+    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Unread Notifications</div>
+    <div style="font-size: 2rem; font-weight: 800; color: #0284c7; margin: 0.25rem 0;">{{ stats.unread_notifications }}</div>
+    <div style="font-size: 0.75rem; color: var(--text-muted);"><a href="{{ url_for('notifications_hub') }}" style="color: var(--primary);">View inbox &rarr;</a></div>
+  </div>
+</div>
+
+<!-- Freshness Status Bar (Module 5) -->
+<div class="card" style="padding: 1rem 1.25rem; margin-bottom: 1.5rem; background: #fafbfc;">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <span style="font-weight: 700; font-size: 0.9rem; color: var(--secondary);">Source Freshness Health:</span>
+      <span class="badge badge-fresh">{{ stats.freshness.fresh }} Fresh (&lt;24h)</span>
+      <span class="badge badge-aging">{{ stats.freshness.aging }} Aging (24-72h)</span>
+      <span class="badge badge-stale">{{ stats.freshness.stale }} Stale (&gt;72h)</span>
+      {% if stats.freshness.never_checked > 0 %}
+        <span class="badge badge-minor">{{ stats.freshness.never_checked }} Never Checked</span>
+      {% endif %}
+    </div>
+    <a href="{{ url_for('freshness_monitor') }}" class="btn btn-outline btn-sm">Full Freshness Monitor &rarr;</a>
+  </div>
+</div>
+
+<!-- Main Dashboard Grid (Websites + Recent Changes) -->
+<div style="display: grid; grid-template-columns: 1.6fr 1.4fr; gap: 1.5rem; align-items: start;">
+
+  <!-- Left: Tracked Websites -->
+  <div class="card" style="margin-bottom: 0;">
+    <div class="card-header">
+      <div>
+        <h3 class="card-title">Tracked Websites</h3>
+        <p class="card-subtitle">Manage domains, active policies, and trigger collection cycles.</p>
+      </div>
+      <form method="GET" action="{{ url_for('dashboard') }}" style="display: flex; gap: 0.35rem;">
+        <input type="text" name="q" value="{{ search_query or '' }}" placeholder="Search sites..." style="width: 150px; padding: 0.4rem 0.6rem; font-size: 0.8rem;">
+        <button type="submit" class="btn btn-outline btn-sm">Search</button>
+      </form>
+    </div>
+
+    {% if websites %}
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Website</th>
+              <th>Privacy Policy</th>
+              <th>Terms</th>
+              <th>Quick Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for site in websites %}
+              <tr>
+                <td>
+                  <strong><a href="{{ url_for('website_details', website_id=site.website_id) }}" style="color: var(--secondary); text-decoration: none;">{{ site.website_name }}</a></strong>
+                  <br>
+                  <a href="{{ site.website_url }}" target="_blank" style="font-size: 0.75rem; color: var(--text-muted); text-decoration: none;">{{ site.website_url }} ↗</a>
+                </td>
+                <td>
+                  {% if site.latest_policy_version %}
+                    <span class="badge badge-moderate">v{{ site.latest_policy_version }}</span>
+                  {% else %}
+                    <span style="color: #94a3b8; font-size: 0.8rem;">None</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if site.latest_terms_version %}
+                    <span class="badge badge-minor">v{{ site.latest_terms_version }}</span>
+                  {% else %}
+                    <span style="color: #94a3b8; font-size: 0.8rem;">None</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div style="display: flex; gap: 0.35rem;">
+                    <a href="{{ url_for('compare_versions') }}?website_id={{ site.website_id }}" class="btn btn-outline btn-sm" title="Compare Diffs">⚖️ Diff</a>
+                    <a href="{{ url_for('scraper_refresh_website', website_id=site.website_id) }}" class="btn btn-outline btn-sm" title="Trigger Offline Scrape">🔄 Refresh</a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+        <p>No tracked websites found matching your search.</p>
+        <a href="{{ url_for('add_website') }}" class="btn btn-primary btn-sm" style="margin-top: 0.5rem;">+ Add Website</a>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Right: Recent Changes & Unread Notifications -->
+  <div>
+    <!-- Recent Changes Feed -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Recent Change Detections</h3>
+          <p class="card-subtitle">Classified policy &amp; terms revisions.</p>
+        </div>
+        <a href="{{ url_for('changes_list') }}" style="font-size: 0.8rem; color: var(--primary); font-weight: 600;">View All &rarr;</a>
+      </div>
+
+      {% if stats.recent_updates %}
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+          {% for upd in stats.recent_updates %}
+            <div style="border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem 1rem; background: #fafbfc;">
+              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.25rem;">
+                <div>
+                  <strong style="font-size: 0.88rem; color: var(--secondary);">{{ upd.website_name }}</strong>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); margin-left: 0.35rem;">{{ upd.change_type }}</span>
+                </div>
+                <div>
+                  {% if upd.severity == 'critical' %}
+                    <span class="badge badge-critical">Critical</span>
+                  {% elif upd.severity == 'major' %}
+                    <span class="badge badge-major">Major</span>
+                  {% else %}
+                    <span class="badge badge-moderate">Moderate</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <p style="font-size: 0.82rem; color: #334155; margin: 0.25rem 0;">
+                {{ upd.summary or 'Version increment recorded in database.' }}
+              </p>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.4rem; font-size: 0.75rem; color: var(--text-muted);">
+                <span>Version {{ upd.old_version or 'Init' }} &rarr; Version {{ upd.new_version }} &bull; {{ upd.change_date[:10] }}</span>
+                <a href="{{ url_for('change_detail', change_id=upd.change_id) }}" style="color: var(--primary); font-weight: 600; text-decoration: none;">Inspect &rarr;</a>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="color: var(--text-muted); font-size: 0.85rem;">No recent change detections recorded.</p>
+      {% endif %}
+    </div>
+
+    <!-- Recent Notifications Preview -->
+    <div class="card" style="margin-bottom: 0;">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Recent Alerts &amp; Notifications</h3>
+          <p class="card-subtitle">Freshness alerts and change announcements.</p>
+        </div>
+        <a href="{{ url_for('notifications_hub') }}" style="font-size: 0.8rem; color: var(--primary); font-weight: 600;">All Notifications &rarr;</a>
+      </div>
+
+      {% if recent_notifications %}
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          {% for n in recent_notifications %}
+            <div style="display: flex; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 6px; background: {% if not n.is_read %}#eff6ff{% else %}#fafbfc{% endif %}; border: 1px solid {% if not n.is_read %}#bfdbfe{% else %}var(--border){% endif %}; font-size: 0.82rem;">
+              <span style="font-size: 1.1rem;">{% if n.notification_type == 'policy_changed' %}📝{% else %}⚠️{% endif %}</span>
+              <div style="flex: 1;">
+                <div style="font-weight: 600; color: var(--secondary);">{{ n.title }}</div>
+                <div style="color: var(--text-muted); font-size: 0.75rem;">{{ n.message }}</div>
+                <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 0.2rem;">{{ n.created_at[:19] }}</div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="color: var(--text-muted); font-size: 0.85rem;">No unread alerts.</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}
