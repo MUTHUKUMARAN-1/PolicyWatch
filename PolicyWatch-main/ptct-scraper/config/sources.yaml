@@ -1,0 +1,61 @@
+# Privacy Policy & Terms Change Tracker - source configuration (FR-01)
+#
+# approval_status: a source may be collected LIVE only when set to APPROVED, and only after you have
+# (1) reviewed the site's terms of use and robots.txt, and (2) obtained the mentor's written approval (CP-1).
+# Offline mode (fixtures) works for every source regardless of status.
+
+crawl:
+  user_agent: "PTCTracker/1.0 (student project; Cybernaut Web Scraping SRS 13; contact: YOUR_EMAIL_HERE)"
+  timeout_seconds: 15
+  min_interval_seconds: 10      # conservative; mentor-approved
+  max_retries: 3                # exponential backoff: 2s, 4s, 8s (transient errors only)
+  backoff_base_seconds: 2
+  max_pages_per_run: 10
+  min_body_chars: 200
+
+sources:
+  # ---- Offline demo sources (synthetic 'Acme' pages in fixtures/). Safe to run any time.
+  - id: acme-privacy
+    company: Acme (synthetic demo)
+    doc_type: privacy_policy
+    url: https://example.invalid/acme/privacy
+    refresh_hours: 24
+    approval_status: DEMO_ONLY
+    fixture: fixtures/privacy_v1.html
+    selectors:
+      title: "main h1"
+      updated: ".last-updated"
+      body: "#policy-content"
+      section_headings: ["h2"]
+      ignore: [".cookie-banner", "nav"]
+
+  - id: acme-terms
+    company: Acme (synthetic demo)
+    doc_type: terms_of_service
+    url: https://example.invalid/acme/terms
+    refresh_hours: 24
+    approval_status: DEMO_ONLY
+    fixture: fixtures/terms_v1.html
+    selectors:
+      title: "h1.doc-title"
+      updated: "time.eff"
+      body: "article.tos"
+      section_headings: ["h3"]
+
+  # ---- REAL SOURCES: fill in after reading the site's terms + robots.txt and getting mentor approval.
+  # Candidate pages to propose at CP-1 (presented as options only - verify permission yourself):
+  #   - a public, openly-licensed policy page (e.g. a nonprofit/open-source project's privacy policy)
+  #   - a government or open-data portal's terms page
+  #   - a company page whose robots.txt allows the path and whose ToS does not prohibit automated access
+  # Example (leave commented until approved):
+  # - id: example-org-privacy
+  #   company: Example Org
+  #   doc_type: privacy_policy
+  #   url: https://example.org/privacy
+  #   refresh_hours: 24
+  #   approval_status: PENDING_MENTOR_APPROVAL   # change to APPROVED only with written approval
+  #   selectors:
+  #     title: "h1"
+  #     updated: ".updated, time"
+  #     body: ["main", "article", "#content"]
+  #     section_headings: ["h2", "h3"]
